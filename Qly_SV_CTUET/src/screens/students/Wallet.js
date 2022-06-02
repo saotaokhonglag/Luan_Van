@@ -1,8 +1,37 @@
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, useColorScheme, StatusBar } from 'react-native'
-import React from 'react'
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, StatusBar } from 'react-native'
+import React, { useState, useContext } from 'react'
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'
+import { useNavigation } from '@react-navigation/native'
+import { db } from '../../../firebase_config'
+import {runTransaction , collection, updateDoc, getDocs, docs, where, query, collectionGroup, onSnapshot, doc, writeBatch, setDoc, addDoc } from 'firebase/firestore'
+import { userContext } from '../../store/GlobalContext'
 
 const Wallet = () => {
+
+    const{userInfo, setUserInfo} = useContext(userContext)
+    const navigation = useNavigation();
+    const [product, setProduct] = useState([])
+
+    async function Logout(){
+        navigation.navigate('Login')
+    }
+
+    async function test() {
+
+        // const citiesRef = collection(db, "cities");
+        //     addDoc(collection(citiesRef, 'SF', 'landmarks'), {
+        //         name: 'Golden Gate Bridge',
+        //         type: 'museum'
+        //     })
+//update
+        // const citiesRef = doc(db, 'sinhvien', 'XjfeXaCP2DEDABlxwCFm');
+        // await updateDoc(doc(citiesRef, 'Cart', 'SP001'), {
+        //         soluong: 11
+        //     })
+
+        navigation.navigate('Profile')
+    }
+
 
     return (
         <SafeAreaView style={styles.container}>
@@ -11,9 +40,10 @@ const Wallet = () => {
                 <Text style={styles.money}>0đ</Text>
             </View>
             <View style={styles.Wallet}>
-                <TouchableOpacity style={{alignItems: 'center'}}>
+                <TouchableOpacity onPress={test}
+                    style={{ alignItems: 'center' }}>
                     <MaterialCommunityIcons name="wallet-plus" size={45} style={{ marginBottom: 10, color: 'black' }} />
-                    <Text style={{ color: '#2F85F8', fontSize: 18 }}>Nạp Tiền</Text>
+                    <Text style={{ color: '#2F85F8', fontSize: 18 }}>{userInfo.email}</Text>
                 </TouchableOpacity>
             </View>
             <View style={styles.history}>
@@ -62,14 +92,14 @@ const styles = StyleSheet.create({
         marginTop: -45,
         borderWidth: 0.5,
         justifyContent: 'center',
-     
+
     },
-    history:{
+    history: {
         width: '100%',
         height: 50,
         backgroundColor: '#FFFFFF',
         justifyContent: 'center',
-        paddingLeft: 10, 
+        paddingLeft: 10,
         marginTop: 30
     }
 })

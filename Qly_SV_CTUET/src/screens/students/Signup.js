@@ -1,15 +1,25 @@
 import React, { useState } from 'react';
 import {
-    SafeAreaView, TextInput,
-    Button, ImageBackground,
+    SafeAreaView,
+    ImageBackground,
     View, Dimensions,
     FlatList,
     StyleSheet,
-    Text, StatusBar, Image,
+    StatusBar, Image,
     TouchableOpacity
 } from 'react-native';
-import FontAsome from 'react-native-vector-icons/FontAwesome'
-
+import { Text } from 'react-native-paper'
+import Logo from '../../components/Logo'
+import Header from '../../components/Header'
+import Button from '../../components/Button'
+import TextInput from '../../components/TextInput'
+import BackButton from '../../components/BackButton'
+import { theme } from '../../contants/theme'
+import { emailValidator } from '../../helpers/emailValidator'
+import { passwordValidator } from '../../helpers/passwordValidator'
+import { nameValidator } from '../../helpers/nameValidator';
+import GoogleButton from '../../components/GoogleButton';
+import Background from '../../components/Background';
 
 
 
@@ -18,150 +28,97 @@ const windowHeight = Dimensions.get('window').height
 
 export default function Signup({ navigation }) {
 
-    const [email, onChangeEmail] = useState('')
-    const [isValidEmail, setValidEmail] = useState(true)
-    const [number, onChangeNumber] = useState('')
-    const [isValidPhone, setValidPhone] = useState(true)
 
-    const verifyEmail = (email) => {
-        let regex1 = new RegExp('[a-z0-9]+@student.ctuet.edu.vn');
-        let regex = new RegExp("([!#-'*+/-9=?A-Z^-~-]+(\.[!#-'*+/-9=?A-Z^-~-]+)*|\"\(\[\]!#-[^-~ \t]|(\\[\t -~]))+\")@([!#-'*+/-9=?A-Z^-~-]+(\.[!#-'*+/-9=?A-Z^-~-]+)*|\[[\t -Z^-~]*])");
-        if (regex.test(email) || regex1.test(email)) {
-            return true;
+    const [name, setName] = useState({ value: '', error: '' })
+    const [email, setEmail] = useState({ value: '', error: '' })
+    const [password, setPassword] = useState({ value: '', error: '' })
+
+    async function Signup() {
+        const nameError = nameValidator(name.value)
+        const emailError = emailValidator(email.value)
+        const passwordError = passwordValidator(password.value)
+        if (emailError || passwordError || nameError) {
+            setName({ ...name, error: nameError })
+            setEmail({ ...email, error: emailError })
+            setPassword({ ...password, error: passwordError })
+            return
         }
-        return false;
-    }
-
-    const verifyPhone = (number) => {
-        let onlyNumber = new RegExp(/(0[3|5|7|8|9])+([0-9]{8})\b/)
-        if (onlyNumber.test(number)) {
-            return true;
-        }
-        return false;
-    }
-
-    async function signup() {
-        
+        navigation.reset({
+            index: 0,
+            routes: [{ name: 'Dashboard' }],
+        })
     }
 
     return (
-        <SafeAreaView style={{ flex: 1 }}>
+       
+        <Background>
             <StatusBar barStyle="light-content" />
-            <View style={styles.view}>
-                <View style={styles.component}>
-                    <Text style={{ color: 'black', marginRight: '13%' }}>Email</Text>
-                    <TextInput style={styles.textinput} autoCapitalize='none'
-                        onChangeText={(text) => {
-                            onChangeEmail(text)
-                            const isValid = verifyEmail(text);
-                            isValid ? setValidEmail(true) : setValidEmail(false)
-                        }}
-                        value={email} />
-                </View>
-                <View style={styles.component} >
-                    <Text style={{ color: 'black', marginRight: '4%' }}>Password</Text>
-                    <TextInput style={styles.textinput} secureTextEntry={true} />
-                </View>
-                <View style={styles.component} >
-                    <Text style={{ color: 'black', marginRight: '11%' }}>Phone</Text>
-                    <TextInput style={styles.textinput} keyboardType='numeric' maxLength={10}
-                        onChangeText={(text) => {
-                            onChangeNumber(text)
-                            const isValid = verifyPhone(text);
-                            isValid ? setValidPhone(true) : setValidPhone(false)
-                        }}
-                        value={number} />
-                </View>
-                <Text style={styles.textErro}>{isValidEmail ? '' : 'Định dạng email không đúng'}</Text>
-                <Text style={styles.textErro}>{isValidPhone ? '' : 'Không đúng định dạng'}</Text>
+            <Logo />
+            <Header>Create Account</Header>
+            <BackButton goBack={navigation.goBack} />
 
+            <TextInput
+                label="Name"
+                returnKeyType="next"
+                value={name.value}
+                onChangeText={(text) => setName({ value: text, error: '' })}
+                error={!!name.error}
+                errorText={name.error}
+            />
+            <TextInput
+                label="Email"
+                returnKeyType="next"
+                value={email.value}
+                onChangeText={(text) => setEmail({ value: text, error: '' })}
+                error={!!email.error}
+                errorText={email.error}
+                autoCapitalize="none"
+                autoCompleteType="email"
+                textContentType="emailAddress"
+                keyboardType="email-address"
+            />
+            <TextInput
+                label="Password"
+                returnKeyType="done"
+                value={password.value}
+                onChangeText={(text) => setPassword({ value: text, error: '' })}
+                error={!!password.error}
+                errorText={password.error}
+                secureTextEntry
+            />
+            <Button
+                mode="contained"
+                onPress={Signup}
+                style={{ marginTop: 24 }}
+            >
+                Sign Up
+            </Button>
+            <View style={styles.row}>
+                <Text>Already have an account? </Text>
+                <TouchableOpacity onPress={() => navigation.replace('Login')}>
+                    <Text style={styles.link}>Login</Text>
+                </TouchableOpacity>
             </View>
-            <View style={styles.view}>
-                <TouchableOpacity onPress={() => { navigation.navigate('Login') }}
-                    style={styles.button}>
-                    <Text style={{ color: 'white', fontSize: 20 }}>Back to Login</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={{ marginTop: 20, width: '60%', height: '30%', borderColor: 'white', borderWidth: 1, borderRadius: 100, backgroundColor: '#4D33B9', justifyContent: 'center', alignItems: 'center' }}>
-                    <Text style={{ color: 'white', fontSize: 20 }}>Register</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={signup}
-                    style={[styles.buttonContainer, { backgroundColor: '#f5e7ea' }]}>
-                    <View style={styles.iconWrapper}>
-                        <FontAsome name='google' style={styles.icon} size={22} color={'red'} />
-                    </View>
-                    <View style={styles.btnTxtWarpper}>
-                        <Text style={[styles.btnText, { color: '#de4d41' }]}>Login with Google</Text>
-                    </View>
-                </TouchableOpacity>
-                
-            </View>
-        </SafeAreaView>
+        </Background>
 
     );
 }
 
 
 const styles = StyleSheet.create({
-    textinput: {
-        color: 'black',
-        height: '100%',
-        width: '80%',
-        borderBottomColor: 'black',
-        borderBottomWidth: 1,
-        textAlign: 'right',
-    },
-    view: {
-        width: '100%',
-        height: '20%',
-        marginTop: 0.2 * windowHeight,
-        alignItems: 'center',
-    },
-    component: {
-        height: 30,
-        width: '80%',
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between'
-    },
-    button: {
-        width: '60%',
-        height: '30%',
-        borderRadius: 100,
-        backgroundColor: '#18A2EB',
-        justifyContent: 'center',
-        alignItems: 'center'
-    },
-    textErro: {
-        color: 'red',
-        fontSize: 18,
-        fontStyle: 'italic',
-        marginLeft: '-30%',
-        marginTop: 20
-    },
-    buttonContainer: {
-        marginTop: 10,
-        width: '90%',
-        height: windowHeight / 15,
-        padding: 10,
-        flexDirection: 'row',
-        borderRadius: 3
-    },
-    iconWrapper: {
-        width: 30,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    icon: {
-        fontWeight: 'bold'
-    },
-    btnTxtWarpper: {
+    container: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
+        backgroundColor: '#FFFF'
     },
-    btnText: {
-        fontSize: 18,
+    row: {
+        flexDirection: 'row',
+        marginTop: 4,
+    },
+    link: {
         fontWeight: 'bold',
-    }
+        color: theme.colors.primary,
+    },
 })
 

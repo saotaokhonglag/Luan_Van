@@ -7,18 +7,20 @@ import { useNavigation } from '@react-navigation/native'
 
 const orderItems = ({info})=>{
   const navigation = useNavigation();
-  const {id, idsp, iduser, tensp, gia, soluong, trangthai, img} = info;
+  const {id, idsp, tensp, gia, image, soluong, trangthai, img} = info;
+
     return(
         <TouchableOpacity  onPress={() => {
           navigation.navigate('EditPd',
           {
             id: info.id,
-            // idsp: idsp,
-            // iduser: iduser,
+            idsp: info.idsp,
             name: info.tensp,
             price: info.gia,
             quantity: info.soluong,
-            // status: trangthai
+            status: info.trangthai,
+            img: info.image,
+            totals: info.gia * info.soluong
           })}}
         style={styles.products}>
           <View style={styles.imageProducts}>
@@ -28,12 +30,12 @@ const orderItems = ({info})=>{
               }}
               style={{ height: 65, width: 65 }}
             />
-            <Text style={{ paddingLeft: 20, fontSize: 15 }}>{info.tensp}</Text>
+            <Text style={{ paddingLeft: 20, fontSize: 15 }}>{tensp}</Text>
           </View>
           <View style={styles.priceProducts}>
             <View style={{ alignItems: 'center' }}>
               <Text style={{ fontSize: 20, paddingStart: 30 }}>{gia.toFixed(0).replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.')}đ</Text>      
-                <Text style={{ fontSize: 18, marginLeft: 10, marginTop: 2 }}>Số lượng: {info.soluong}</Text>
+                <Text style={{ fontSize: 18, marginLeft: 10, marginTop: 2 }}>Số lượng: {soluong}</Text>
             </View>
           </View>
         </TouchableOpacity>

@@ -1,91 +1,117 @@
-import React from 'react';
+import React, { useEffect, useContext, useState } from 'react';
 import {
-    SafeAreaView, TextInput,
-    Button, ImageBackground,
-    View, Dimensions,
-    FlatList,
-    StyleSheet,
-    Text, StatusBar, Image,
-    TouchableOpacity
+  SafeAreaView,
+  ImageBackground,
+  View, Dimensions,
+  FlatList,
+  StyleSheet,
+  StatusBar, Image,
+  TouchableOpacity,
+  Platform
 } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import FontAsome from 'react-native-vector-icons/FontAwesome'
+import * as AuthSession from 'expo-auth-session/providers/google';
+import * as Webrowser from 'expo-web-browser'
+import { userContext } from '../../store/GlobalContext'
+import { db } from '../../../firebase_config'
+import { collection, addDoc, query, getDoc, onSnapshot, where, doc } from 'firebase/firestore'
+import { LogBox } from "react-native";
+import { Text } from 'react-native-paper'
+import Background from '../../components/Background'
+import Logo from '../../components/Logo'
+import Header from '../../components/Header'
+import Button from '../../components/Button'
+import TextInput from '../../components/TextInput'
+import BackButton from '../../components/BackButton'
+import { theme } from '../../contants/theme'
+import { emailValidator } from '../../helpers/emailValidator'
+import { passwordValidator } from '../../helpers/passwordValidator'
+import GoogleButton from '../../components/GoogleButton';
+
+
+LogBox.ignoreLogs(["EventEmitter.removeListener"]);
+Webrowser.maybeCompleteAuthSession();
 
 
 const windowWidth = Dimensions.get('window').width
 const windowHeight = Dimensions.get('window').height
 
 const Login = ({ navigation }) => {
-    return (
-        <ImageBackground style={{ height: '100%', width: '100%' }}
-            source={{ uri: 'https://img4.thuthuatphanmem.vn/uploads/2020/03/05/anh-nen-toi-cho-dien-thoai_101025597.jpg' }} resizeMode='stretch'>
-            <StatusBar barStyle="light-content" />
-            <SafeAreaView style={{ flex: 1, color:'white' }}>
-                <View style={{ height: '100%', width: '100%' }}>
-                    <View style={styles.view}>
-                        <View style={styles.component}>
-                            <Text style={{ color: 'white' }}>Email</Text>
-                            <TextInput style={styles.textinput} autoCapitalize='none' />
-                        </View>
-                        <View style={styles.component}>
-                            <Text style={{ color: 'white' }}>Password</Text>
-                            <TextInput style={styles.textinput} secureTextEntry={true} />
 
-                        </View>
-                    </View>
-                    <View style={styles.view}>
-                        <TouchableOpacity onPress={() => { navigation.navigate('HomePage') }}
-                            style={ styles.button}>
-                            <Text style={{ color: 'white', fontSize: 20 }}>Login</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={() => { navigation.navigate('Signup') }}
-                        style={[styles.button,{
-                          backgroundColor: '#4D33B9',
-                          marginTop: 20
-                        }]}>
-                            <Text style={{ color: 'white', fontSize: 20 }}>Register</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            </SafeAreaView>
-        </ImageBackground>
-    );
+  const [email, setEmail] = useState({ value: '', error: '' })
+  const [password, setPassword] = useState({ value: '', error: '' })
+
+  const onLoginPressed = () => {
+    const emailError = emailValidator(email.value)
+    const passwordError = passwordValidator(password.value)
+    if (emailError || passwordError) {
+      setEmail({ ...email, error: emailError })
+      setPassword({ ...password, error: passwordError })
+      return
+    }
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'Dashboard' }],
+    })
+  }
+
+  return (
+    <Background>
+      <BackButton goBack={navigation.goBack} />
+      <Logo />
+      <Header>Welcome back</Header>
+      <TextInput
+        label="Email"
+        returnKeyType="next"
+        value={email.value}
+        onChangeText={(text) => setEmail({ value: text, error: '' })}
+        error={!!email.error}
+        errorText={email.error}
+        autoCapitalize="none"
+        autoCompleteType="email"
+        textContentType="emailAddress"
+        keyboardType="email-address"
+      />
+      <TextInput
+        label="Password"
+        returnKeyType="done"
+        value={password.value}
+        onChangeText={(text) => setPassword({ value: text, error: '' })}
+        error={!!password.error}
+        errorText={password.error}
+        secureTextEntry
+      />
+      <Button mode="contained" onPress={onLoginPressed}>
+        Login
+      </Button>
+    </Background>
+  );
 }
 
-
 const styles = StyleSheet.create({
-    textinput: {
-        color: 'white',
-        height: '100%',
-        width: '70%',
-        borderBottomColor: 'white',
-        borderBottomWidth: 1,
-        textAlign: 'right',
-    },
-    view: {
-        width: '100%',
-        height: '20%',
-        marginTop: 0.3 * windowHeight,
-        alignItems: 'center',
-    },
-    component: {
-        height: 30,
-        width: '70%',
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-    },
-    button:{
-        width: '60%', 
-        height: '30%', 
-        borderColor: 'white', 
-        borderWidth: 1, 
-        borderRadius: 100, 
-        backgroundColor: '#18A2EB', 
-        justifyContent: 'center', 
-        alignItems: 'center'
-    }
-})
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  userInfo: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  profilePic: {
+    width: 50,
+    height: 50
+  },
+  row: {
+    flexDirection: 'row',
+    marginTop: 4,
+  },
+  link: {
+    fontWeight: 'bold',
+    color: theme.colors.primary,
+  },
+});
 
 export default Login;

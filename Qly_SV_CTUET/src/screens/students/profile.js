@@ -1,11 +1,11 @@
 import { View, StyleSheet, SafeAreaView, StatusBar, TouchableOpacity } from 'react-native'
-import React from 'react'
+import React, { useContext } from 'react'
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'
 import AntDesign from 'react-native-vector-icons/AntDesign'
-import Ionicons from 'react-native-vector-icons/Ionicons'
-import { NavigationContainer } from '@react-navigation/native';
 import EditProfile from './EditProfile'
-
+import { userContext } from '../../store/GlobalContext'
+import { db } from '../../../firebase_config'
+import { collection, addDoc, query, getDoc, onSnapshot, where, doc } from 'firebase/firestore'
 import {
     Avatar,
     Title,
@@ -13,7 +13,21 @@ import {
     Text,
 } from 'react-native-paper'
 
-const Profile = ({navigation}) => {
+const Profile = ({ navigation }) => {
+    const { userInfo } = useContext(userContext)
+
+
+    async function checkUser() {
+        const docRef = doc(db, "sinhvien", userInfo.id);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+            console.log("Document data:", userInfo);
+        } else {
+            // doc.data() will be undefined in this case
+            console.log("No such document!: ", userInfo.id);
+        }
+    }
     return (
         <SafeAreaView style={styles.container}>
             <StatusBar barStyle='light-content' backgroundColor='#2F85F8' />
@@ -22,14 +36,14 @@ const Profile = ({navigation}) => {
             <View style={styles.profile}>
                 <Avatar.Image
                     source={{
-                        uri: 'https://hinhnen123.com/wp-content/uploads/2021/06/anh-avatar-cute-dep-nhat-5.jpg',
+                        uri: userInfo.picture,
                     }}
                     size={80}
                 />
                 <View style={{ marginLeft: 20 }}>
                     <Title style={styles.title}>Thai Ngoc</Title>
                     <Caption style={styles.caption}>0855633053</Caption>
-                    <TouchableOpacity onPress={() => {navigation.navigate('EditProfile')}}>
+                    <TouchableOpacity onPress={() => { checkUser() }}>
                         <Text style={{ fontSize: 18, fontWeight: '500', color: '#2F85F8' }}>Chỉnh sửa thông tin</Text>
                     </TouchableOpacity>
                 </View>
@@ -52,8 +66,8 @@ const Profile = ({navigation}) => {
             <View style={styles.menuWapper}>
                 <TouchableOpacity>
                     <View style={styles.menuItem}>
-                       <MaterialCommunityIcons name="heart-outline" color="#2F85F8" size={25}/> 
-                       <Text style={styles.menuItemText}>Yêu thích</Text>
+                        <MaterialCommunityIcons name="heart-outline" color="#2F85F8" size={25} />
+                        <Text style={styles.menuItemText}>Yêu thích</Text>
                     </View>
                 </TouchableOpacity>
                 <TouchableOpacity>
@@ -62,8 +76,8 @@ const Profile = ({navigation}) => {
                         borderTopColor: '#dddddd',
                         borderTopWidth: 1
                     }]}>
-                       <MaterialCommunityIcons name="credit-card" color="#2F85F8" size={25}/> 
-                       <Text style={styles.menuItemText}>Thanh toán</Text>
+                        <MaterialCommunityIcons name="credit-card" color="#2F85F8" size={25} />
+                        <Text style={styles.menuItemText}>Thanh toán</Text>
                     </View>
                 </TouchableOpacity>
                 <TouchableOpacity>
@@ -72,8 +86,8 @@ const Profile = ({navigation}) => {
                         borderTopColor: '#dddddd',
                         borderTopWidth: 1
                     }]}>
-                       <MaterialCommunityIcons name="account-check-outline" color="#2F85F8" size={25}/> 
-                       <Text style={styles.menuItemText}>Hổ trợ</Text>
+                        <MaterialCommunityIcons name="account-check-outline" color="#2F85F8" size={25} />
+                        <Text style={styles.menuItemText}>Hổ trợ</Text>
                     </View>
                 </TouchableOpacity>
                 <TouchableOpacity>
@@ -82,8 +96,8 @@ const Profile = ({navigation}) => {
                         borderTopColor: '#dddddd',
                         borderTopWidth: 1
                     }]}>
-                       <AntDesign name="setting" color="#2F85F8" size={25}/> 
-                       <Text style={styles.menuItemText}>Cài đặt</Text>
+                        <AntDesign name="setting" color="#2F85F8" size={25} />
+                        <Text style={styles.menuItemText}>Cài đặt</Text>
                     </View>
                 </TouchableOpacity>
             </View>
@@ -168,7 +182,7 @@ const styles = StyleSheet.create({
         marginLeft: 20,
         fontSize: 16,
     },
-    menuWapper:{
+    menuWapper: {
         marginTop: 10,
         width: '100%'
     }

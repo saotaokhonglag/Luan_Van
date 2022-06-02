@@ -1,50 +1,72 @@
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, useColorScheme, StatusBar } from 'react-native'
-import React from 'react'
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, StatusBar } from 'react-native'
+import React, { useContext, useEffect } from 'react'
 import Entypo from 'react-native-vector-icons/Entypo'
 import EvilIcons from 'react-native-vector-icons/EvilIcons'
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'
 import AntDesign from 'react-native-vector-icons/AntDesign'
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import AddOrder from './AddOrder'
-import Profile from './profile'
-import Wallet from './Wallet';
+import { Avatar } from 'react-native-paper'
+import { userContext } from '../../store/GlobalContext'
+import { db } from '../../../firebase_config'
+import { collection, addDoc, query, getDoc, onSnapshot, where, doc, setDoc } from 'firebase/firestore'
 
-import {
-    Avatar,
-} from 'react-native-paper'
+
 const HomePage = ({ navigation }) => {
 
+    const { userInfo } = useContext(userContext)
+    useEffect(() => {
+        checkUser()
+    }, []);
+
+    async function checkUser() {
+        const docRef = doc(db, "sinhvien", userInfo.id);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+
+            console.log('Login goole successed!: ', userInfo.id)
+        } else {
+            // doc.data() will be undefined in this case
+            const citiesRef = collection(db, "sinhvien");
+            await setDoc(doc(citiesRef, userInfo.id), {
+                iduser: userInfo.id,
+                hovaten: userInfo.family_name + " " + given_name,
+                gioitinh: "",
+                ngaysinh: false, population: 860000,
+                regions: ["west_coast", "norcal"]
+            });
+            console.log("No such document!: ", userInfo.id);
+        }
+    }
     return (
         <SafeAreaView style={styles.container}>
             <StatusBar barStyle='light-content' backgroundColor='#2F85F8' />
             <View style={styles.circleShape}>
-                
-                    <View style={styles.header}>
-                        <TouchableOpacity onPress={() => { navigation.navigate('Profile')}}>
+
+                <View style={styles.header}>
+                    <TouchableOpacity onPress={() => { navigation.navigate('Profile') }}>
                         <Avatar.Image
                             source={{
                                 uri: 'https://hinhnen123.com/wp-content/uploads/2021/06/anh-avatar-cute-dep-nhat-5.jpg',
                             }}
                             size={70}
                         />
-                        </TouchableOpacity>
-                        <View style={{ paddingLeft: 10, fontSize: '18' }}>
-                            <Text style={styles.text}>Thai Ngoc</Text>
-                            <View style={styles.eye}>
-                                <Text style={styles.text}>**************</Text>
-                                <TouchableOpacity>
-                                    <Entypo name="eye-with-line" size={15} style={{ marginLeft: 5, color: 'white' }} />
-                                </TouchableOpacity>
-                            </View>
-                        </View>
-                        <View style={{ paddingLeft: 110 }}>
-                            <EvilIcons name="bell" size={28} style={{ color: 'white' }} />
-                        </View>
-                        <View>
+                    </TouchableOpacity>
+                    <View style={{ paddingLeft: 10, fontSize: '18' }}>
+                        <Text style={styles.text}>Thai Ngoc</Text>
+                        <View style={styles.eye}>
+                            <Text style={styles.text}>**************</Text>
+                            <TouchableOpacity>
+                                <Entypo name="eye-with-line" size={15} style={{ marginLeft: 5, color: 'white' }} />
+                            </TouchableOpacity>
                         </View>
                     </View>
-                
+                    <View style={{ paddingLeft: 110 }}>
+                        <EvilIcons name="bell" size={28} style={{ color: 'white' }} />
+                    </View>
+                    <View>
+                    </View>
+                </View>
+
 
                 <View style={styles.button}></View>
             </View>
