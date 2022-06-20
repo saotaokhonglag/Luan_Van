@@ -5,122 +5,173 @@ import {
   ScrollView,
   StyleSheet,
   Button,
-  ImageBackground, 
-  TextInput
-} from 'react-native'
-import React, { useState } from 'react'
-import AntDesign from 'react-native-vector-icons/AntDesign'
-import { useNavigation } from '@react-navigation/native';
-import { db } from '../../../firebase_config'
-import { doc, updateDoc} from 'firebase/firestore'
-import addOrders from './AddOrder'
+  ImageBackground,
+  TextInput,
+  TouchableOpacity,
+  Dimensions,
+} from "react-native";
+import React, { useState, useContext } from "react";
+import AntDesign from "react-native-vector-icons/AntDesign";
+import { db } from "../../../firebase_config";
+import { doc, updateDoc } from "firebase/firestore";
+import { userContext } from "../../store/GlobalContext";
+import { theme } from "../../contants/theme";
+import AppLoader from "../../components/AppLoader";
 
-const EditPd = ({route, navigation }) => {
+const { width, height } = Dimensions.get("window");
+const EditPd = ({ route, navigation }) => {
   const item = route.params;
-  const [curPrice, setCurPrice] = useState(item.totals)
-  const [change, setChange] = useState({});
-  const [product, setProduct] = useState([])
-
+  const { userInfo, loginPending, setLoginPending } = useContext(userContext);
+  const [curPrice, setCurPrice] = useState(item.totals);
+  const [change, setChange] = useState(item.quantity);
+  const [product, setProduct] = useState([]);
 
   function AddQty(item) {
-    setChange(item.quantity++)
-    setCurPrice(item.quantity * item.price)
+    item.quantity++;
+    setCurPrice(item.quantity * item.price);
   }
-
-
   function DecQty(item) {
     if (item.quantity > 0) {
-      setChange(item.quantity--)
-      setCurPrice(item.quantity * item.price)
+      item.quantity--;
+      setCurPrice(item.quantity * item.price);
     }
-
   }
 
-  async function onAddToCart() {
-    const ref = doc(db, 'sinhvien', 'XjfeXaCP2DEDABlxwCFm');
-    await updateDoc(doc(ref, 'Cart', item.idsp), {
-      soluong: item.quantity
-  })
- 
-    navigation.navigate('AddOrder');
+  async function updateCart() {
+    setLoginPending(true);
+    const ref = doc(db, "sinhvien", userInfo.id);
+    await updateDoc(doc(ref, "Cart", item.idsp), {
+      soluong: item.quantity,
+    });
+    navigation.navigate("AddOrder");
+    setLoginPending(false);
   }
   return (
-    <SafeAreaView>
-      <ScrollView>
-        <View style={styles.infoContainer}>
-          <ImageBackground
-            source={{
-              uri: 'https://hinhnen123.com/wp-content/uploads/2021/06/anh-avatar-cute-dep-nhat-5.jpg',
-            }}
-            style={{ height: 65, width: 65 }}
-          />
-
-          {/* <View style={{backgroundColor:'#F4A460'}}> */}
-          <View >
-            <Text style={styles.name}>{item.name}</Text>
-            <Text style={styles.location}>Giá: {item.price.toFixed(0).replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.')}đ</Text>
-            <View style={{ flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', marginBottom: 10 }}>
-              <Text style={{ fontSize: 16, fontWeight: '300' }}>Số lượng: </Text>
-              <AntDesign
-                name="minuscircle"
-                size={24}
-                color="black"
-                onPress={() => DecQty(item)}
-              />
-              <Text style={{ marginLeft: 10 }}>{item.quantity}</Text>
-              <AntDesign
-                style={{ marginLeft: 10 }}
-                name="pluscircle"
-                size={24}
-                color="black"
-                onPress={() => AddQty(item)}
-              />
-
-            </View>
-            <Text style={styles.location}> Thành tiền: {curPrice.toFixed(0).replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.')}đ</Text>
-            <Button
-              onPress={onAddToCart}
-              title="Add to cart"
+    <>
+      <SafeAreaView>
+        <ScrollView>
+          <View style={styles.infoContainer}>
+            <ImageBackground
+              source={{
+                uri: "https://hinhnen123.com/wp-content/uploads/2021/06/anh-avatar-cute-dep-nhat-5.jpg",
+              }}
+              style={{ height: 65, width: 65 }}
             />
+
+            <View>
+              <Text style={styles.name}>{item.name}</Text>
+              <Text style={styles.location}>
+                Giá:{" "}
+                {item.price
+                  .toFixed(0)
+                  .replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.")}
+                đ
+              </Text>
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  alignSelf: "flex-start",
+                  marginBottom: 10,
+                }}
+              >
+                <Text style={{ fontSize: 16, fontWeight: "300" }}>
+                  Số lượng:{" "}
+                </Text>
+                <AntDesign
+                  name="minuscircle"
+                  size={24}
+                  color="black"
+                  onPress={() => DecQty(item)}
+                />
+                <Text style={{ marginLeft: 10 }}>{item.quantity}</Text>
+                <AntDesign
+                  style={{ marginLeft: 10 }}
+                  name="pluscircle"
+                  size={24}
+                  color="black"
+                  onPress={() => AddQty(item)}
+                />
+              </View>
+              <Text style={styles.location}>
+                Thành tiền:{" "}
+                {curPrice.toFixed(0).replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.")}đ
+              </Text>
+              <TouchableOpacity
+                onPress={() => {
+                  updateCart();
+                }}
+                style={styles.update}
+              >
+                <Text style={styles.textButton}>Cập nhật</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => {}} style={styles.delete}>
+                <Text style={styles.textButton}>Xóa sản phẩm</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+        </ScrollView>
+      </SafeAreaView>
+      {loginPending ? <AppLoader /> : null}
+    </>
   );
 };
 
 const styles = StyleSheet.create({
   image: {
     height: 300,
-    width: '100%'
+    width: "100%",
   },
   infoContainer: {
     padding: 15,
-    backgroundColor: '#FFEFD5'
+    backgroundColor: "#FFEFD5",
   },
   name: {
     fontSize: 22,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   description: {
     fontSize: 16,
-    fontWeight: '400',
-    color: 'black',
-
+    fontWeight: "400",
+    color: "black",
   },
   location: {
     fontSize: 16,
-    fontWeight: '400',
-    color: '#787878',
+    fontWeight: "400",
+    color: "#787878",
     marginBottom: 10,
-    color: 'black',
-
+    color: "black",
   },
   icon: {
-    alignItems: 'flex-start',
-    alignSelf: 'flex-start',
-    marginBottom: 5
-  }
+    alignItems: "flex-start",
+    alignSelf: "flex-start",
+    marginBottom: 5,
+  },
+  delete: {
+    flex: 1,
+    backgroundColor: "red",
+    height: 50,
+    width: width - 30,
+    marginVertical: 7,
+    borderRadius: 5,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  textButton: {
+    color: "#FFFF",
+    fontWeight: "bold",
+    fontSize: 18,
+  },
+  update: {
+    flex: 1,
+    backgroundColor: theme.colors.primary,
+    height: 50,
+    width: width - 30,
+    marginVertical: 7,
+    borderRadius: 5,
+    justifyContent: "center",
+    alignItems: "center",
+  },
 });
 
-export default EditPd
+export default EditPd;
