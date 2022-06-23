@@ -1,118 +1,254 @@
-import React from 'react'
-import { View, Text, StyleSheet, SafeAreaView, StatusBar, TouchableOpacity, Image } from 'react-native'
-import AntDesign from 'react-native-vector-icons/AntDesign'
-import EvilIcons from 'react-native-vector-icons/EvilIcons'
-import { Feather } from '@expo/vector-icons';
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  SafeAreaView,
+  StatusBar,
+  TouchableOpacity,
+  FlatList,
+  Dimensions,
+  ImageBackground,
+  Pressable,
+  Modal,
+} from "react-native";
+import {
+  collection,
+  doc,
+  onSnapshot,
+  query,
+  updateDoc,
+  where,
+} from "firebase/firestore";
+import { db } from "../../../firebase_config";
+import DirectoryProducts from "../../components/DirectoryProducts";
+import { useUser } from "../../store/GlobalContext";
 
-const CatalogDetails = ({ navigation }) => {
+const { width, height } = Dimensions.get("window");
+const CatalogDetails = ({ navigation, route }) => {
+  const item = route.params;
+  const { ModalVisibleDirectory, setModalVisibleDirectory, id_sp, setId_sp } =
+    useUser();
+  const [data, setData] = useState([]);
+  const [Total, setTotal] = useState();
+
+  useEffect(() => {
+    getData();
+
+    return () => {};
+  }, []);
+
+  async function onPressDelete() {
+    const ref = doc(db, "sanpham", id_sp);
+    updateDoc(ref, {
+      idDanhMuc: "",
+    });
+    setModalVisibleDirectory(false);
+  }
+
+  async function onPressCancel() {
+    setModalVisibleDirectory(false);
+  }
+  async function getData() {
+    const ref = query(
+      collection(db, "sanpham"),
+      where("idDanhMuc", "==", item.idDanhMuc)
+    );
+    const un = onSnapshot(ref, (querySnap) => {
+      const data = [];
+      let Total = 0;
+      querySnap.forEach((d) => {
+        data.push(d.data());
+        Total += 1;
+      });
+      setTotal(Total);
+      setData(data);
+    });
+  }
+
+  const nullData = () => {
     return (
-        <View>
-            <View style={styles.view}>
-                <Text style={{ fontSize: 20 }}>Bún nè(1)</Text>
-                <View style={{ paddingLeft: 260 }}>
-                    <Feather name="more-vertical" size={30} />
-                </View>
-            </View>
-            <View style={
-                {
-                    borderTopColor: '#dddddd',
-                    borderTopWidth: 1
-                }} />
-            <TouchableOpacity onPress={() => { navigation.navigate('CatalogDetails') }}>
-                <View style={{ flexDirection: 'row', }}>
-                    <Image style={styles.cusImage} source={require('../image/hoc-nau-bun-dau-mo-quan.jpg')} />
-                    <View style={{ flexDirection: 'column', }}>
-                        <Text style={{ fontSize: 22, fontWeight: 'bold', marginTop: 20 }}>Bún Nè</Text>
-                        <Text style={{ fontSize: 18, color: '#F6720B' }}>200.000</Text>
-                    </View>
-                </View>
-                <View style={[styles.menuItem,
-                {
-                    borderTopColor: '#dddddd',
-                    borderTopWidth: 1
-                }]} />
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => { navigation.navigate('CatalogDetails') }}>
-                <View style={{ flexDirection: 'row', }}>
-                    <Image style={styles.cusImage} source={require('../image/Thucuong.jpg')} />
-                    <View style={{ flexDirection: 'column', }}>
-                        <Text style={{ fontSize: 22, fontWeight: 'bold', marginTop: 20 }}>Đồ uống</Text>
-                        <Text style={{ fontSize: 18, color: '#F6720B' }}>20.000</Text>
-                    </View>
-                </View>
-                <View style={[styles.menuItem,
-                {
-                    borderTopColor: '#dddddd',
-                    borderTopWidth: 1,
-                }]} />
-            </TouchableOpacity>
-            <View style={styles.addButton}>
-                <TouchableOpacity
-                    style={{
-                        backgroundColor: '#ffffff',
-                        width: 170,
-                        height: 50,
-                        borderRadius: 10,
-                        borderWidth: 0.4,
-                        marginTop: '100%',
-                        alignItems: 'center',
-                        padding: 5,
-                        borderColor: '#CE0000',
-                    }}>
-                    <Text style={{
-                        color: '#CE0000',
-                        fontSize: 18, marginLeft: 10, marginTop: 5
-                    }}>Xóa sản phẩm</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => {navigation.navigate('AddProduct')}}
-                    style={{
-                        backgroundColor: '#2F85F8',
-                        width: 170,
-                        height: 50,
-                        borderRadius: 10,
-                        borderWidth: 0.4,
-                        marginTop: '100%',
-                        alignItems: 'center',
-                        padding: 5,
-                        marginLeft: 30,
-                    }}>
-                    <Text style={{
-                        color: '#FCF4F4FF',
-                        fontSize: 18, marginLeft: 10, marginTop: 5
-                    }}>Thêm sản phẩm</Text>
-                </TouchableOpacity>
-            </View>
+      <View
+        style={{
+          width: width,
+          height: height - 200,
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <ImageBackground
+          source={require("../image/unboxing.png")}
+          style={{ height: 80, width: 80 }}
+        />
+        <Text
+          style={{
+            width: 200,
+            textAlign: "center",
+            fontSize: 18,
+            color: "#ACACAC",
+            marginTop: 10,
+          }}
+        >
+          Không có sản phẩm nào trong danh mục này
+        </Text>
+      </View>
+    );
+  };
+  return (
+    <SafeAreaView style={styles.container}>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={ModalVisibleDirectory}
+      >
+        <View style={styles.modalView}>
+          <Text style={styles.modalText}>
+            Bạn có chắc muốn xóa sản phẩm khỏi danh mục?{" "}
+          </Text>
+          <View style={{ flexDirection: "row" }}>
+            <Pressable
+              style={[styles.button, styles.buttonOk]}
+              onPress={onPressDelete}
+            >
+              <Text style={styles.textStyle}>Xác Nhận</Text>
+            </Pressable>
+            <Pressable
+              style={[styles.button, styles.buttonCancel]}
+              onPress={onPressCancel}
+            >
+              <Text style={styles.textCancel}>Từ Chối</Text>
+            </Pressable>
+          </View>
         </View>
-    )
-}
+      </Modal>
+      <View style={styles.view}>
+        <Text style={{ fontSize: 20 }}>
+          {item.TenDanhMuc} ({Total})
+        </Text>
+      </View>
+      <View style={{ width: width, height: height - 200 }}>
+        {data.length > 0 ? (
+          <FlatList
+            keyExtractor={(item) => item.idsp}
+            data={data}
+            renderItem={({ item: data }) => {
+              return <DirectoryProducts {...data} info={data} />;
+            }}
+          />
+        ) : (
+          nullData()
+        )}
+      </View>
+      <View style={styles.addButton}>
+        <TouchableOpacity
+          onPress={() => {
+            navigation.navigate("AddProduct");
+          }}
+          style={{
+            backgroundColor: "#2F85F8",
+            width: width - 20,
+            height: 50,
+            borderRadius: 10,
+            borderWidth: 0.4,
+            alignItems: "center",
+            padding: 5,
+          }}
+        >
+          <Text
+            style={{
+              color: "#FCF4F4FF",
+              fontSize: 18,
+              marginLeft: 10,
+              marginTop: 5,
+            }}
+          >
+            Thêm sản phẩm
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
+  );
+};
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#EFEFEF',
-        alignItems: 'center',
-        fontFamily: 'sans-serif'
+  container: {
+    flex: 1,
+    backgroundColor: "#F0F0F0",
+    alignItems: "center",
+    fontFamily: "sans-serif",
+  },
+  view: {
+    height: 40,
+    marginStart: 10,
+    marginTop: 10,
+    width: width - 20,
+  },
+  cusImage: {
+    width: 80,
+    height: 90,
+    borderRadius: 50 / 2,
+    borderWidth: 0.4,
+    backgroundColor: "white",
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 10,
+    marginBottom: 10,
+    marginHorizontal: 10,
+  },
+  addButton: {
+    alignItems: "center",
+    justifyContent: "center",
+    width: width,
+    backgroundColor: "#FFFF",
+    height: 100,
+    position: "relative",
+    borderTopWidth: 0.5,
+    borderTopColor: "#dddddd",
+  },
+  modalView: {
+    margin: 20,
+    marginTop: 250,
+    backgroundColor: "white",
+    borderRadius: 20,
+    padding: 35,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
     },
-    view: {
-        height: 40,
-        marginStart: 10,
-        marginTop: 10,
-        flexDirection: 'row',
-    },
-    cusImage: {
-        width: 80,
-        height: 90,
-        borderRadius: 50 / 2,
-        borderWidth: 0.4,
-        backgroundColor: 'white',
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginTop: 10,
-        marginBottom: 10,
-        marginHorizontal: 10,
-    },
-    addButton: {
-        marginLeft: 10,
-        flexDirection: 'row',
-    }
-})
-export default CatalogDetails
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  button: {
+    borderRadius: 20,
+    padding: 10,
+    elevation: 2,
+    border: 3,
+    width: 120,
+    marginHorizontal: 10,
+    alignItems: "center",
+  },
+  buttonOpen: {
+    backgroundColor: "#F194FF",
+  },
+  buttonOk: {
+    backgroundColor: "#2196F3",
+  },
+  textStyle: {
+    color: "white",
+    fontWeight: "bold",
+  },
+  textCancel: {
+    color: "black",
+    fontWeight: "bold",
+  },
+  buttonCancel: {
+    backgroundColor: "white",
+  },
+  modalText: {
+    marginBottom: 15,
+    textAlign: "center",
+  },
+});
+export default CatalogDetails;

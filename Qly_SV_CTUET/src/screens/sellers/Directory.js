@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import { collection, onSnapshot, query, where } from "firebase/firestore";
+import React, { useState, useEffect } from "react";
 import {
   Alert,
   Modal,
@@ -9,18 +10,43 @@ import {
   SafeAreaView,
   Image,
   View,
+  FlatList,
 } from "react-native";
 import AntDesign from "react-native-vector-icons/AntDesign";
+import { db } from "../../../firebase_config";
 import AddCategoriesModal from "../../components/Modals/AddCategoriesModal";
+import DirectoryItem from "../../components/DirectoryItem";
 
 const Directory = ({ navigation }) => {
   const [ModalVisible, setModalVisible] = useState(false);
+  const [data, setData] = useState();
+
+  useEffect(() => {
+    getData();
+
+    return () => {};
+  }, []);
+
   const LogOut = (bool) => {
     setModalVisible(bool);
   };
   const CancelModal = (bool) => {
     setModalVisible(bool);
   };
+
+  async function getData() {
+    const ref = query(
+      collection(db, "danhmuc"),
+      where("id_DV", "==", "DV1906202298")
+    );
+    const un = await onSnapshot(ref, (querySnapshot) => {
+      const data = [];
+      querySnapshot.forEach((d) => {
+        data.push(d.data());
+      });
+      setData(data);
+    });
+  }
   return (
     <SafeAreaView>
       <Modal
@@ -31,65 +57,13 @@ const Directory = ({ navigation }) => {
       >
         <AddCategoriesModal LogOut={LogOut} cancelModal={CancelModal} />
       </Modal>
-      <View style={{ flexDirection: "column" }}>
-        <TouchableOpacity
-          onPress={() => {
-            navigation.navigate("CatalogDetails");
-          }}
-        >
-          <View style={{ flexDirection: "row" }}>
-            <Image
-              style={styles.cusImage}
-              source={require("../image/hoc-nau-bun-dau-mo-quan.jpg")}
-            />
-            <View style={{ flexDirection: "column" }}>
-              <Text style={{ fontSize: 22, fontWeight: "bold", marginTop: 20 }}>
-                Bún Nè
-              </Text>
-              <Text style={{ fontSize: 18, color: "#999999" }}>1 Sản phẩm</Text>
-            </View>
-          </View>
-          <View
-            style={[
-              styles.menuItem,
-              {
-                borderTopColor: "#dddddd",
-                borderTopWidth: 1,
-              },
-            ]}
-          />
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => {
-            navigation.navigate("CatalogDetails");
-          }}
-        >
-          <View style={{ flexDirection: "row" }}>
-            <Image
-              style={styles.cusImage}
-              source={require("../image/Thucuong.jpg")}
-            />
-            <View style={{ flexDirection: "column" }}>
-              <Text style={{ fontSize: 22, fontWeight: "bold", marginTop: 20 }}>
-                Đồ uống
-              </Text>
-              <Text style={{ fontSize: 18, color: "#999999" }}>0 Sản phẩm</Text>
-            </View>
-          </View>
-          <View
-            style={[
-              styles.menuItem,
-              {
-                borderTopColor: "#dddddd",
-                borderTopWidth: 1,
-              },
-            ]}
-          />
-        </TouchableOpacity>
-      </View>
-      <View style={styles.textContainer}>
-        <View></View>
-      </View>
+      <FlatList
+        keyExtractor={(item) => item.idDanhMuc}
+        data={data}
+        renderItem={({ item: product }) => {
+          return <DirectoryItem {...product} info={product} />;
+        }}
+      />
       <TouchableOpacity
         onPress={() => setModalVisible(true)}
         style={styles.addButton}

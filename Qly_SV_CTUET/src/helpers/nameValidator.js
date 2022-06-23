@@ -1,8 +1,8 @@
 export function nameValidator(name) {
-  let regex = new RegExp(/^[a-zA-Z0-9]+$/);
+  let regex = new RegExp(/^[a-zA-Z0-9]{3,10}$/);
 
-  if (!name) return "Họ và tên không được để trống!";
+  if (!name) return "Không được để trống!";
   if (!regex.test(name.trim()))
-    return "Họ và tên phải từ 2 ký tự và không có ký tự đặt biệt!";
+    return "Không được chứa ký tự đặt biệt và từ 3 ký tự!";
   return "";
 }

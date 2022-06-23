@@ -1,37 +1,16 @@
 import {
-  View,
-  Text,
-  ScrollView,
-  Button,
-  ImageBackground,
-  TouchableOpacity,
+  SafeAreaView,
   StyleSheet,
+  Text,
+  View,
+  ImageBackground,
 } from "react-native";
-import React, { useState, useEffect } from "react";
-import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
-import editPd from "../screens/students/EditPd";
-import { useNavigation } from "@react-navigation/native";
+import React from "react";
 
-const orderItems = ({ info }) => {
-  const navigation = useNavigation();
-  const { id, idsp, tensp, gia, image, soluong, trangthai } = info;
-
+const ManagementOrdersDetailItem = ({ info }) => {
+  const { id, idsp, tensp, gia, image, soluong, trangthai, img } = info;
   return (
-    <TouchableOpacity
-      onPress={() => {
-        navigation.navigate("EditPd", {
-          id: info.id,
-          idsp: info.idsp,
-          name: info.tensp,
-          price: info.gia,
-          quantity: info.soluong,
-          status: info.trangthai,
-          img: info.image,
-          totals: info.gia * info.soluong,
-        });
-      }}
-      style={styles.products}
-    >
+    <SafeAreaView style={styles.products}>
       <View style={styles.imageProducts}>
         {image != "" ? (
           <ImageBackground
@@ -58,9 +37,11 @@ const orderItems = ({ info }) => {
           </Text>
         </View>
       </View>
-    </TouchableOpacity>
+    </SafeAreaView>
   );
 };
+
+export default ManagementOrdersDetailItem;
 
 const styles = StyleSheet.create({
   products: {
@@ -83,5 +64,3 @@ const styles = StyleSheet.create({
     width: 200,
   },
 });
-
-export default orderItems;

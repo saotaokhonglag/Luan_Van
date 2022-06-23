@@ -13,6 +13,10 @@ function UserProvider({ children }) {
   const [walletBalance, setWalletBalance] = useState();
   const [product, setProduct] = useState([]);
   const [loginPending, setLoginPending] = useState(false);
+  const [ModalVisible, setModalVisible] = useState(false);
+  const [ModalVisibleDirectory, setModalVisibleDirectory] = useState(false);
+  const [qrcode, setQrcode] = useState();
+  const [id_sp, setId_sp] = useState();
   const classs = ["HTTT0118", "KTPM0118", "KHMT0118"];
   const genders = ["Nam", "Nữ", "Khác"];
   return (
@@ -30,6 +34,14 @@ function UserProvider({ children }) {
         setWalletBalance,
         loginPending,
         setLoginPending,
+        qrcode,
+        setQrcode,
+        ModalVisible,
+        setModalVisible,
+        ModalVisibleDirectory,
+        setModalVisibleDirectory,
+        id_sp,
+        setId_sp,
       }}
     >
       {children}

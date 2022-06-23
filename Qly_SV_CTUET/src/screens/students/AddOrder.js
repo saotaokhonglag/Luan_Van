@@ -88,6 +88,7 @@ const AddOrder = ({ info, navigation }) => {
             tensp: d.data().tensp,
             image: "",
             id_DV: d.data().id_DV,
+            image: d.data().image,
           });
         } else {
           const found = product.some((el) => el.idsp === data);
@@ -99,6 +100,7 @@ const AddOrder = ({ info, navigation }) => {
               tensp: d.data().tensp,
               image: "",
               id_DV: d.data().id_DV,
+              image: d.data().image,
             });
             return true;
           } else {
@@ -163,7 +165,7 @@ const AddOrder = ({ info, navigation }) => {
         <View style={styles.barCodeBox}>
           <BarCodeScanner
             onBarCodeScanned={scanned ? undefined : handleBarCodeScaner}
-            style={{ height: 600, width: 400, marginLeft: -10 }}
+            style={{ height: 600, width: 400, marginLeft: -30 }}
           />
         </View>
         {scanned && (

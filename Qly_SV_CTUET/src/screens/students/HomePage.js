@@ -146,7 +146,7 @@ const HomePage = ({ navigation }) => {
             >
               <Avatar.Image
                 source={{
-                  uri: userInfo.picture,
+                  uri: userProfile.image,
                 }}
                 size={70}
               />

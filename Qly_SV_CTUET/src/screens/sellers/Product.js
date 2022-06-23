@@ -1,87 +1,172 @@
 import React, { useState, useContext, useEffect } from "react";
 import {
   View,
-  Text,
-  StyleSheet,
-  SafeAreaView,
   FlatList,
-  StatusBar,
-  TouchableOpacity,
-  Image,
-  Button,
-  Dimensions,
+  Text,
   Modal,
+  StyleSheet,
+  Pressable,
+  SafeAreaView,
+  Dimensions,
+  TouchableOpacity,
+  Alert,
 } from "react-native";
-import AntDesign from "react-native-vector-icons/AntDesign";
+import Feather from "react-native-vector-icons/Feather";
+import { useUser } from "../../store/GlobalContext";
+import ProductItemsManan from "../../components/ProductItemsManan";
+import { db } from "../../../firebase_config";
+import {
+  collection,
+  query,
+  where,
+  updateDoc,
+  doc,
+  onSnapshot,
+} from "firebase/firestore";
+import { LogBox } from "react-native";
 
+LogBox.ignoreLogs([
+  "EventEmitter.removeListener",
+  "ViewPropTypes will be removed",
+  "componentWillReceiveProps has been renamed",
+]);
+const wait = (timeout) => {
+  return new Promise((resolve) => setTimeout(resolve, timeout));
+};
 const { height, width } = Dimensions.get("window");
-const data = [
-  {
-    TenSP: "Bún",
-    Gia: "200.000",
-    Hinh: "../image/hoc-nau-bun-dau-mo-quan.jpg",
-  },
-  {
-    TenSP: "Mì",
-    Gia: "200.000",
-    Hinh: "../image/hoc-nau-bun-dau-mo-quan.jpg",
-  },
-  {
-    TenSP: "Nước",
-    Gia: "200.000",
-    Hinh: "../image/hoc-nau-bun-dau-mo-quan.jpg",
-  },
-];
-const Item = ({ TenSP, Gia, Hinh }, { navigation }) => (
-  <TouchableOpacity
-    style={{ flexDirection: "row", backgroundColor: "#ffffff", marginTop: 2 }}
-  >
-    <View style={{ flexDirection: "row" }}>
-      <Image
-        style={styles.cusImage}
-        source={require("../image/hoc-nau-bun-dau-mo-quan.jpg")}
-      />
-      <View style={{ flexDirection: "column" }}>
-        <Text style={{ fontSize: 22, fontWeight: "bold", marginTop: 20 }}>
-          {TenSP}
-        </Text>
-        <Text style={{ fontSize: 18, color: "#F6720B" }}>{Gia}</Text>
-      </View>
-    </View>
-  </TouchableOpacity>
-);
 const Product = ({ navigation }) => {
-  const renderItem = ({ item }) => (
-    <Item Gia={item.Gia} Hinh={item.Hinh} TenSP={item.TenSP} />
-  );
-
-  return (
-    <SafeAreaView>
-      <View style={styles.View}>
-        <TouchableOpacity
-          style={[styles.sbutton, { backgroundColor: "#2F85F8" }]}
-        >
-          <Text style={styles.Text}>Tất cả</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.sbutton, { backgroundColor: "#FFFFFF" }]}
-        >
-          <Text style={styles.Text2}>Bún</Text>
-        </TouchableOpacity>
+  const { ModalVisible, setModalVisible } = useUser();
+  const [refreshing, setRefreshing] = useState(false);
+  const [data, setData] = useState([]);
+  const onRefresh = React.useCallback(() => {
+    GetDATA();
+    setRefreshing(true);
+    wait(1000).then(() => setRefreshing(false));
+  }, []);
+  useEffect(() => {
+    GetDATA();
+    onRefresh();
+  }, []);
+  const ListEmptyComponent = () => {
+    return (
+      <View
+        style={{
+          alignItems: "center",
+          marginHorizontal: 50,
+          marginTop: 20,
+        }}
+      >
+        <Text style={styles.null}>Không có sản phẩm</Text>
       </View>
-      <FlatList data={data} renderItem={renderItem} />
-      <TouchableOpacity style={styles.addButton}>
-        <AntDesign
-          name="plus"
-          size={20}
-          color="#FCF4F4FF"
-          style={{ marginStart: 15 }}
+    );
+  };
+  async function onPressOk() {
+    try {
+      await updateDoc(doc(db, "SanPham", MaSP), {
+        TrangThai: 0,
+      });
+      Alert.alert("Thông Báo", "Xóa sản phẩm thành công!");
+    } catch (error) {
+      Alert.alert(`Lỗi: ${error.message}`, `Lỗi: ${error.message}`);
+    }
+    setModalVisible(false);
+    onRefresh();
+  }
+  async function onPressCancel() {
+    setModalVisible(false);
+  }
+  function sumItem() {
+    let sum = 0;
+    for (let i = 0; i < data.length; i++) {
+      sum += 1;
+    }
+    return sum;
+  }
+  async function GetDATA() {
+    const citiesRef = collection(db, "sanpham");
+    const q = query(
+      citiesRef,
+      where("id_DV", "==", "DV1906202298"),
+      where("TrangThai", "==", 1)
+    );
+    const unsubscribe = await onSnapshot(q, (querySnapshot) => {
+      const stock = [];
+      querySnapshot.forEach((d) => {
+        stock.push(d.data());
+      });
+      setData(stock);
+    });
+  }
+  return (
+    <SafeAreaView style={{ flex: 1, alignItems: "center" }}>
+      <Modal animationType="slide" transparent={true} visible={ModalVisible}>
+        <View style={styles.modalView}>
+          <Text style={styles.modalText}>Bạn có chắc muốn xóa sản phẩm? </Text>
+          <View style={{ flexDirection: "row" }}>
+            <Pressable
+              style={[styles.button, styles.buttonOk]}
+              onPress={onPressOk}
+            >
+              <Text style={styles.textStyle}>Xác Nhận</Text>
+            </Pressable>
+            <Pressable
+              style={[styles.button, styles.buttonCancel]}
+              onPress={onPressCancel}
+            >
+              <Text style={styles.textCancel}>Từ Chối</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
+      <View style={{ width: "100%", height: width * 2 - 110 }}>
+        <View style={styles.view}>
+          <Text style={{ fontSize: 18, marginRight: 10 }}>
+            {sumItem()} Sản phẩm
+          </Text>
+          <Feather
+            name="info"
+            size={25}
+            color="#969696"
+            style={{ marginHorizontal: 10 }}
+          />
+          <View style={{ flexDirection: "column" }}>
+            <Text style={{ color: "#969696" }}>
+              Trượt sang trái để sửa sản phẩm!
+            </Text>
+            <Text style={{ color: "#969696" }}>
+              Ấn vào sản phẩm để ẩn thanh trượt!
+            </Text>
+          </View>
+        </View>
+        <FlatList
+          ListEmptyComponent={ListEmptyComponent}
+          keyExtractor={(item) => item.idsp}
+          data={data}
+          renderItem={({ item: product }) => {
+            return <ProductItemsManan {...product} info={product} />;
+          }}
         />
+      </View>
+
+      <TouchableOpacity
+        onPress={() => navigation.navigate("CreateProduct")}
+        style={{
+          backgroundColor: "#2F85F8",
+          width: width - 20,
+          height: 50,
+          borderRadius: 10,
+          borderWidth: 0.4,
+          alignItems: "center",
+          padding: 5,
+          marginTop: width - 400,
+        }}
+      >
         <Text
           style={{
             color: "#FCF4F4FF",
             fontSize: 18,
             marginLeft: 10,
+            marginTop: 5,
           }}
         >
           Thêm sản phẩm
@@ -92,10 +177,81 @@ const Product = ({ navigation }) => {
 };
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: "#EFEFEF",
+    height: 80,
+    width: width,
+    backgroundColor: "white",
+    justifyContent: "center",
+    padding: 16,
+  },
+  deleteBox: {
+    backgroundColor: "red",
+    justifyContent: "center",
     alignItems: "center",
-    fontFamily: "sans-serif",
+    width: 100,
+    height: 80,
+  },
+  null: {
+    fontSize: 18,
+    color: "#000000",
+    fontWeight: "bold",
+  },
+  lineLeft: {
+    fontSize: 20,
+    color: "#333333",
+    marginLeft: 5,
+    fontWeight: "bold",
+  },
+  view: {
+    marginStart: 10,
+    flexDirection: "row",
+    marginVertical: 10,
+    alignItems: "center",
+  },
+  modalView: {
+    margin: 20,
+    marginTop: 250,
+    backgroundColor: "white",
+    borderRadius: 20,
+    padding: 35,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  button: {
+    borderRadius: 20,
+    padding: 10,
+    elevation: 2,
+    border: 3,
+    width: 120,
+    marginHorizontal: 10,
+    alignItems: "center",
+  },
+  buttonOpen: {
+    backgroundColor: "#F194FF",
+  },
+  buttonOk: {
+    backgroundColor: "#2196F3",
+  },
+  textStyle: {
+    color: "white",
+    fontWeight: "bold",
+  },
+  textCancel: {
+    color: "black",
+    fontWeight: "bold",
+  },
+  buttonCancel: {
+    backgroundColor: "white",
+  },
+  modalText: {
+    marginBottom: 15,
+    textAlign: "center",
   },
   cusImage: {
     width: 80,
@@ -110,44 +266,11 @@ const styles = StyleSheet.create({
     marginHorizontal: 10,
   },
   addButton: {
-    width: 200,
-    height: 50,
-    borderRadius: 100 / 2,
-    borderWidth: 0.4,
-    backgroundColor: "white",
+    marginLeft: 80,
     flexDirection: "row",
-    alignItems: "center",
-    padding: 5,
-    backgroundColor: "#2F85F8",
-    marginTop: height / 3 - 20,
-    marginStart: width / 2 - 20,
-  },
-  sbutton: {
-    height: 25,
-    width: 60,
-    borderRadius: 4,
-    alignItems: "center",
-    borderWidth: 0.5,
-    borderColor: "#707070",
-    marginLeft: 10,
-  },
-  Text: {
-    color: "#FFFFFF",
-  },
-  Text2: {
-    color: "#2F85F8",
-  },
-  View: {
-    height: 50,
-    flexDirection: "row",
-    backgroundColor: "#FFFFFF",
-    alignItems: "center",
-  },
-  View2: {
-    height: 50,
-    flexDirection: "row",
-    marginLeft: 320,
-    marginTop: 10,
+    width: "100%",
+    height: "20%",
+    marginTop: 50,
   },
 });
 export default Product;

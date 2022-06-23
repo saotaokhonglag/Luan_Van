@@ -5,35 +5,25 @@ import {
   StatusBar,
   TouchableOpacity,
 } from "react-native";
-import React, { useContext } from "react";
-import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import React, { useContext, useEffect } from "react";
 import AntDesign from "react-native-vector-icons/AntDesign";
-import EditProfile from "./EditProfile";
 import { userContext } from "../../store/GlobalContext";
 import { db } from "../../../firebase_config";
-import {
-  collection,
-  addDoc,
-  query,
-  getDoc,
-  onSnapshot,
-  where,
-  doc,
-} from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
 import { Avatar, Title, Caption, Text } from "react-native-paper";
 
 const Profile = ({ navigation }) => {
-  const { userInfo, walletBalance, userProfile } = useContext(userContext);
+  const { userInfo, walletBalance, userProfile, setUserProfile } =
+    useContext(userContext);
+  useEffect(() => {
+    getProfile();
+  }, [userProfile]);
 
-  async function checkUser() {
-    const docRef = doc(db, "sinhvien", userInfo.id);
+  async function getProfile() {
+    const docRef = doc(db, "sinhvien", userProfile.iduser);
     const docSnap = await getDoc(docRef);
-
-    if (docSnap.exists()) {
-      console.log("Document data:", userInfo);
-    } else {
-      // doc.data() will be undefined in this case
-      console.log("No such document!: ", userInfo.id);
+    if (docSnap.data() !== undefined) {
+      setUserProfile(docSnap.data());
     }
   }
   return (

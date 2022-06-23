@@ -116,7 +116,7 @@ export default function StartScreen({ navigation }) {
         <Paragraph>Ứng dụng dành cho sinh viên</Paragraph>
         <Button
           mode="contained"
-          onPress={() => navigation.navigate("AdminPage")}
+          onPress={() => navigation.navigate("HomePageSeller")}
         >
           Đăng nhập với tài khoản khác
         </Button>

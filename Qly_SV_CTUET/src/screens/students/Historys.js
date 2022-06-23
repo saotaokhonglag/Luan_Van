@@ -4,9 +4,10 @@ import { useUser } from "../../store/GlobalContext";
 import { db } from "../../../firebase_config";
 import { query, collection, where, onSnapshot } from "firebase/firestore";
 import HistoryItem from "../../components/HistoryItem";
+import AppLoader from "../../components/AppLoader";
 
 const Historys = () => {
-  const { userInfo, setUserInfo, userProfile } = useUser();
+  const { userProfile, loginPending, setLoginPending } = useUser();
   const [history, setHistory] = useState();
 
   useEffect(() => {
@@ -17,6 +18,7 @@ const Historys = () => {
     };
   }, []);
   async function getHistory() {
+    setLoginPending(true);
     const q = query(
       collection(db, "giaodich"),
       where("iduser", "==", userProfile.iduser)
@@ -28,22 +30,22 @@ const Historys = () => {
       });
       setHistory(stock);
     });
+    setLoginPending(false);
   }
   return (
-    <View style={{ flex: 1, alignItems: "center" }}>
-      <FlatList
-        keyExtractor={(item) => item.magd}
-        data={history}
-        renderItem={({ item: history }) => {
-          return <HistoryItem {...history} info={history} />;
-        }}
-        // ListHeaderComponent={header}
-        // ListFooterComponent={Total}
-      />
-    </View>
+    <>
+      <View style={{ flex: 1, alignItems: "center" }}>
+        <FlatList
+          keyExtractor={(item) => item.magd}
+          data={history}
+          renderItem={({ item: history }) => {
+            return <HistoryItem {...history} info={history} />;
+          }}
+        />
+      </View>
+      {loginPending ? <AppLoader /> : null}
+    </>
   );
 };
 
 export default Historys;
-
-const styles = StyleSheet.create({});

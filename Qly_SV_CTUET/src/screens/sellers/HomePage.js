@@ -6,13 +6,15 @@ import {
   TouchableOpacity,
   Image,
 } from "react-native";
-import React from "react";
-import EvilIcons from "react-native-vector-icons/EvilIcons";
+import React, { useState, useEffect } from "react";
 import AntDesign from "react-native-vector-icons/AntDesign";
-
+import QRCode from "react-native-qrcode-svg";
 import { Avatar, Title, Caption, Text } from "react-native-paper";
 
 const HomePageSller = ({ navigation }) => {
+  const [qrcode, setQrcode] = useState("SP001010101");
+
+  async function createQR() {}
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#2F85F8" />
@@ -100,7 +102,7 @@ const HomePageSller = ({ navigation }) => {
       </View>
       <TouchableOpacity
         onPress={() => {
-          navigation.navigate("AddOrder");
+          navigation.navigate("CreateProduct");
         }}
         style={styles.addButton}
       >

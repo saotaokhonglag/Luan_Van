@@ -54,21 +54,9 @@ const DetailOrder = ({ navigation, info }) => {
   }, [isLoading]);
 
   async function getIdHD() {
-    var date = new Date().getDate();
-    var month = new Date().getMonth() + 1;
-    var year = new Date().getFullYear();
-    var hours = new Date().getHours();
-    var min = new Date().getMinutes();
-    var sec = new Date().getSeconds();
     setIdHD("HD" + moment().format("DDMMYYYYHHmmss"));
   }
   async function getIdGD() {
-    var date = new Date().getDate();
-    var month = new Date().getMonth() + 1;
-    var year = new Date().getFullYear();
-    var hours = new Date().getHours();
-    var min = new Date().getMinutes();
-    var sec = new Date().getSeconds();
     setIdGD("GD" + moment().format("DDMMYYYYHHmmss"));
     setCurrentDate(moment().format("DD/MM/YYYY HH:mm"));
   }
@@ -120,6 +108,7 @@ const DetailOrder = ({ navigation, info }) => {
           magd: idGD,
           TongTien: totalPrice,
           SoLuongSP: totalProducts,
+          id_DV: idDV,
         });
         setDoc(doc(db, "giaodich", idGD), {
           magd: idGD,
@@ -136,7 +125,8 @@ const DetailOrder = ({ navigation, info }) => {
             id_SP: item.idsp,
             tensp: item.tensp,
             gia: item.gia,
-            SoLuong: item.soluong,
+            soluong: item.soluong,
+            image: "",
           });
         });
         updateDoc(doc(ref, "vi", userProfile.iduser), {

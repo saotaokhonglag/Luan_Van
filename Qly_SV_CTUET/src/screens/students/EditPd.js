@@ -13,7 +13,7 @@ import {
 import React, { useState, useContext } from "react";
 import AntDesign from "react-native-vector-icons/AntDesign";
 import { db } from "../../../firebase_config";
-import { doc, updateDoc } from "firebase/firestore";
+import { deleteDoc, doc, updateDoc } from "firebase/firestore";
 import { userContext } from "../../store/GlobalContext";
 import { theme } from "../../contants/theme";
 import AppLoader from "../../components/AppLoader";
@@ -21,7 +21,8 @@ import AppLoader from "../../components/AppLoader";
 const { width, height } = Dimensions.get("window");
 const EditPd = ({ route, navigation }) => {
   const item = route.params;
-  const { userInfo, loginPending, setLoginPending } = useContext(userContext);
+  const { userInfo, loginPending, setLoginPending, userProfile } =
+    useContext(userContext);
   const [curPrice, setCurPrice] = useState(item.totals);
   const [change, setChange] = useState(item.quantity);
   const [product, setProduct] = useState([]);
@@ -39,10 +40,18 @@ const EditPd = ({ route, navigation }) => {
 
   async function updateCart() {
     setLoginPending(true);
-    const ref = doc(db, "sinhvien", userInfo.id);
+    const ref = doc(db, "sinhvien", userProfile.iduser);
     await updateDoc(doc(ref, "Cart", item.idsp), {
       soluong: item.quantity,
     });
+    navigation.navigate("AddOrder");
+    setLoginPending(false);
+  }
+
+  async function deleteCart() {
+    setLoginPending(true);
+    const ref = doc(db, "sinhvien", userProfile.iduser);
+    await deleteDoc(doc(ref, "Cart", item.idsp));
     navigation.navigate("AddOrder");
     setLoginPending(false);
   }
@@ -51,12 +60,19 @@ const EditPd = ({ route, navigation }) => {
       <SafeAreaView>
         <ScrollView>
           <View style={styles.infoContainer}>
-            <ImageBackground
-              source={{
-                uri: "https://hinhnen123.com/wp-content/uploads/2021/06/anh-avatar-cute-dep-nhat-5.jpg",
-              }}
-              style={{ height: 65, width: 65 }}
-            />
+            {item.img != "" ? (
+              <ImageBackground
+                source={{
+                  uri: item.img,
+                }}
+                style={{ height: 65, width: 65 }}
+              />
+            ) : (
+              <ImageBackground
+                source={require("../image/imagenull.jpg")}
+                style={{ height: 65, width: 65 }}
+              />
+            )}
 
             <View>
               <Text style={styles.name}>{item.name}</Text>
@@ -105,7 +121,12 @@ const EditPd = ({ route, navigation }) => {
               >
                 <Text style={styles.textButton}>Cập nhật</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => {}} style={styles.delete}>
+              <TouchableOpacity
+                onPress={() => {
+                  deleteCart();
+                }}
+                style={styles.delete}
+              >
                 <Text style={styles.textButton}>Xóa sản phẩm</Text>
               </TouchableOpacity>
             </View>

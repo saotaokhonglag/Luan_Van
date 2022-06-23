@@ -16,7 +16,7 @@ const { width } = Dimensions.get("window");
 
 const confirmItems = ({ info }) => {
   const navigation = useNavigation();
-  const { id, idsp, tensp, gia, image, soluong, trangthai, img } = info;
+  const { id, idsp, tensp, gia, image, soluong, trangthai } = info;
 
   return (
     <TouchableOpacity
@@ -26,12 +26,19 @@ const confirmItems = ({ info }) => {
       style={styles.products}
     >
       <View style={styles.imageProducts}>
-        <ImageBackground
-          source={{
-            uri: "https://hinhnen123.com/wp-content/uploads/2021/06/anh-avatar-cute-dep-nhat-5.jpg",
-          }}
-          style={{ height: 65, width: 65 }}
-        />
+        {image != "" ? (
+          <ImageBackground
+            source={{
+              uri: image,
+            }}
+            style={{ height: 65, width: 65 }}
+          />
+        ) : (
+          <ImageBackground
+            source={require("../screens/image/imagenull.jpg")}
+            style={{ height: 65, width: 65 }}
+          />
+        )}
         <Text style={{ paddingLeft: 20, fontSize: 15 }}>{tensp}</Text>
       </View>
 
