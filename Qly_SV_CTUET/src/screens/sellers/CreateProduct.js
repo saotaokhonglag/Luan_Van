@@ -22,13 +22,21 @@ import { numberValidator } from "../../helpers/numberValidate";
 import { nameValidator } from "../../helpers/nameValidator";
 import * as ImagePicker from "expo-image-picker";
 import { getDownloadURL, ref, uploadBytes, getStorage } from "firebase/storage";
-import { collection, onSnapshot, query, setDoc, doc } from "firebase/firestore";
+import {
+  collection,
+  onSnapshot,
+  query,
+  setDoc,
+  doc,
+  where,
+} from "firebase/firestore";
 import moment from "moment";
 import AppLoader from "../../components/AppLoader";
 
 const { width } = Dimensions.get("window");
 const CreateProduct = ({ navigation }) => {
-  const { setQrcode, setLoginPending, loginPending } = useUser();
+  const { setQrcode, setLoginPending, loginPending, ManangerProfile } =
+    useUser();
   const [ModalVisible, setModalVisible] = useState(false);
   const [idSP, setIdSP] = useState();
   const [qty, setQty] = useState({ value: "", error: "" });
@@ -66,7 +74,10 @@ const CreateProduct = ({ navigation }) => {
     navigation.navigate("Product");
   };
   async function getDirectory() {
-    const ref = query(collection(db, "danhmuc"));
+    const ref = query(
+      collection(db, "danhmuc"),
+      where("id_DV", "==", ManangerProfile.id_DV)
+    );
     const unsubscribe = await onSnapshot(ref, (querySnapshot) => {
       const stock = [];
       querySnapshot.forEach((d) => {
@@ -107,9 +118,9 @@ const CreateProduct = ({ navigation }) => {
             tensp: productName.value,
             soluong: parseInt(qty.value),
             idsp: idSP,
-            id_DV: "DV1906202298",
+            id_DV: ManangerProfile.id_DV,
             idDanhMuc: !idDirectory.value ? idDirectory : "",
-            image: !url ? url : "",
+            image: url,
             TrangThai: 1,
           });
           setLoginPending(false);
@@ -126,7 +137,7 @@ const CreateProduct = ({ navigation }) => {
             tensp: productName.value,
             soluong: parseInt(qty.value),
             idsp: idSP,
-            id_DV: "DV1906202298",
+            id_DV: ManangerProfile.id_DV,
             idDanhMuc: !idDirectory.value ? idDirectory : "",
             image: "",
             TrangThai: 1,
@@ -196,7 +207,7 @@ const CreateProduct = ({ navigation }) => {
               style={styles.addButton}
             >
               <Image
-                source={require("../image/add-image.png")}
+                source={require("../../image/add-image.png")}
                 style={{ width: 30, height: 30 }}
               />
               <Text style={styles.text}>Thư viện</Text>
@@ -206,7 +217,7 @@ const CreateProduct = ({ navigation }) => {
               style={styles.addButton}
             >
               <Image
-                source={require("../image/add-photo.png")}
+                source={require("../../image/add-image.png")}
                 style={{ width: 30, height: 30 }}
               />
               <Text style={styles.text}>Chụp ảnh</Text>

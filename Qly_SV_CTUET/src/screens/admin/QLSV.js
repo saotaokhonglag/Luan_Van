@@ -1,39 +1,34 @@
-import React from "react";
-import {
-  Text,
-  Image,
-  View,
-  StyleSheet,
-  FlatList,
-  SafeAreaView,
-} from "react-native";
-import { Avatar } from "react-native-paper";
-import CusDSQL from "./CusDSQL.js";
-const data = [
-  {
-    id: 1,
-    ten: "THAINGUYEN",
-    sdt: "0939205421",
-  },
-  {
-    id: 3,
-    ten: "HONGPHAT",
-    sdt: "0123456789",
-  },
-  {
-    id: 4,
-    ten: "NHATMINH",
-    sdt: "0123456789",
-  },
-];
+import { collection, query, onSnapshot } from "firebase/firestore";
+import React, { useEffect, useState } from "react";
+import { StyleSheet, FlatList, SafeAreaView } from "react-native";
+import { db } from "../../../firebase_config.js";
+import DSSVItem from "./Item/DSSVItem.js";
+
 const DSQLSV = ({ navigation }) => {
+  const [data, setData] = useState();
+  useEffect(() => {
+    getData();
+
+    return () => {};
+  }, []);
+
+  async function getData() {
+    const ref = query(collection(db, "sinhvien"));
+    const un = await onSnapshot(ref, (querySnap) => {
+      let totalStu = [];
+      querySnap.forEach((d) => {
+        totalStu.push(d.data());
+      });
+      setData(totalStu);
+    });
+  }
   return (
     <SafeAreaView>
       <FlatList
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.iduser}
         data={data}
         renderItem={({ item: data }) => {
-          return <CusDSQL {...data} info={data} />;
+          return <DSSVItem {...data} info={data} />;
         }}
       />
     </SafeAreaView>
@@ -51,18 +46,6 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     borderColor: "black",
     flex: 1,
-  },
-  button: {
-    width: 200,
-    height: 60,
-    borderColor: "white",
-    borderWidth: 1,
-    borderRadius: 10,
-    backgroundColor: "#18A2EB",
-    justifyContent: "center",
-    alignItems: "center",
-    alignSelf: "center",
-    marginTop: 10,
   },
 });
 export default DSQLSV;

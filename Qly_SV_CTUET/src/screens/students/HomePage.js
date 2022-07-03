@@ -20,8 +20,6 @@ import {
 } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import Entypo from "react-native-vector-icons/Entypo";
-import EvilIcons from "react-native-vector-icons/EvilIcons";
-import SimpleLineIcons from "react-native-vector-icons/SimpleLineIcons";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import AddMoneyModal from "../../components/Modals/AddMoneyModal";
 import AntDesign from "react-native-vector-icons/AntDesign";
@@ -56,8 +54,6 @@ const HomePage = ({ navigation }) => {
     userProfile,
     setUserProfile,
     setUserInfo,
-    loginPending,
-    setLoginPending,
     walletBalance,
     setWalletBalance,
   } = useUser();
@@ -210,7 +206,7 @@ const HomePage = ({ navigation }) => {
               source={require("../../../assets/add.png")}
             />
 
-            <Text style={{ fontSize: 15 }}>Tạo đơn</Text>
+            <Text style={{ fontSize: 15 }}>Tạo hóa đơn</Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => {

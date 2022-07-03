@@ -1,23 +1,11 @@
-import {
-  collection,
-  query,
-  where,
-  onSnapshot,
-  orderBy,
-} from "firebase/firestore";
+import { collection, query, where, onSnapshot } from "firebase/firestore";
 import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  SafeAreaView,
-  StatusBar,
-  TouchableOpacity,
-  Image,
-} from "react-native";
+import { View, Text, StyleSheet, SafeAreaView } from "react-native";
 import { db } from "../../../firebase_config";
+import { useUser } from "../../store/GlobalContext";
 
 const Chart = ({ navigation }) => {
+  const { ManangerProfile } = useUser();
   const [data, setData] = useState();
   const [orders, setOrders] = useState();
   const [total, setTotal] = useState();
@@ -30,7 +18,7 @@ const Chart = ({ navigation }) => {
   async function getTotal() {
     const ref = query(
       collection(db, "HoaDon"),
-      where("id_DV", "==", "DV1906202298")
+      where("id_DV", "==", ManangerProfile.id_DV)
     );
     const un2 = await onSnapshot(ref, (querySnapshot) => {
       const chart = [];

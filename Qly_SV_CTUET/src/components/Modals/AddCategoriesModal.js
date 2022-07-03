@@ -13,8 +13,8 @@ import { userNameValidator } from "../../helpers/userNameValidator";
 const AddCategoriesModal = (props) => {
   const [categorisName, setCategorisName] = useState({ value: "", error: "" });
 
-  const logOut = (bool) => {
-    props.LogOut(bool);
+  const AddCategories = (bool, categoryName) => {
+    props.AddCategories(bool, categoryName);
   };
   const cancelModal = (bool) => {
     props.cancelModal(bool);
@@ -25,7 +25,7 @@ const AddCategoriesModal = (props) => {
         <View style={styles.textView}>
           <Text style={styles.text}>Thêm danh mục</Text>
           <TouchableOpacity
-            onPress={() => logOut(false)}
+            onPress={() => cancelModal(false)}
             style={{
               height: 30,
               width: 30,
@@ -53,7 +53,7 @@ const AddCategoriesModal = (props) => {
         </View>
         <View style={styles.buttonView}>
           <TouchableOpacity
-            onPress={() => logOut(false)}
+            onPress={() => AddCategories(false, categorisName)}
             style={styles.buttonModal}
           >
             <Text

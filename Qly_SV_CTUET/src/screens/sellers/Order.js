@@ -2,21 +2,18 @@ import React, { useState, useEffect } from "react";
 import {
   View,
   TextInput,
-  Text,
   StyleSheet,
   SafeAreaView,
-  StatusBar,
-  TouchableOpacity,
-  Image,
   FlatList,
 } from "react-native";
 import AntDesign from "react-native-vector-icons/AntDesign";
-import ManageOrdersItem from "../../components/ManageOrdersItem";
+import ManageOrdersItem from "./Item/ManageOrdersItem";
 import { useUser } from "../../store/GlobalContext";
 import { db } from "../../../firebase_config";
 import { query, onSnapshot, collection, where } from "firebase/firestore";
 
 const Order = ({ navigation }) => {
+  const { ManangerProfile } = useUser();
   const [history, setHistory] = useState([]);
   const [searchText, setSearchText] = useState("");
 
@@ -28,7 +25,7 @@ const Order = ({ navigation }) => {
   async function getOrder() {
     const q = query(
       collection(db, "giaodich"),
-      where("id_DV", "==", "DV1906202298")
+      where("id_DV", "==", ManangerProfile.id_DV)
     );
 
     const unsubscribe = await onSnapshot(q, (querySnapshot) => {

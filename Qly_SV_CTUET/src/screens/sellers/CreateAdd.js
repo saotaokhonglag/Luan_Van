@@ -8,7 +8,7 @@ import {
   Image,
 } from "react-native";
 import React from "react";
-import { Avatar, Title, Caption, Text } from "react-native-paper";
+import { Text } from "react-native-paper";
 
 const CreateAdd = ({ navigation }) => {
   return (
@@ -16,7 +16,10 @@ const CreateAdd = ({ navigation }) => {
       <StatusBar barStyle="light-content" backgroundColor="#2F85F8" />
       <Text style={styles.title}>Danh sách sản phẩm</Text>
       <View style={{ flexDirection: "row", marginLeft: 20, marginLeft: 20 }}>
-        <Image style={styles.cusImage} source={require("../image/Cay.png")} />
+        <Image
+          style={styles.cusImage}
+          source={require("../../image/Cay.png")}
+        />
         <View style={{ flexDirection: "column", marginLeft: 10 }}>
           <Text style={styles.textSP}>Cay</Text>
           <Text style={styles.MaSP}>SP0002</Text>

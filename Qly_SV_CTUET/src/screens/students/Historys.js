@@ -1,10 +1,16 @@
-import { StyleSheet, Text, View, FlatList } from "react-native";
+import { View, FlatList } from "react-native";
 import React, { useState, useEffect } from "react";
 import { useUser } from "../../store/GlobalContext";
 import { db } from "../../../firebase_config";
 import { query, collection, where, onSnapshot } from "firebase/firestore";
-import HistoryItem from "../../components/HistoryItem";
+import HistoryItem from "./Item/HistoryItem";
 import AppLoader from "../../components/AppLoader";
+import { LogBox } from "react-native";
+LogBox.ignoreLogs([
+  "EventEmitter.removeListener",
+  "ViewPropTypes will be removed",
+  "Can't perform a React state update on an unmounted component",
+]);
 
 const Historys = () => {
   const { userProfile, loginPending, setLoginPending } = useUser();

@@ -1,8 +1,11 @@
 export function nameValidator(name) {
-  let regex = new RegExp(/^[a-zA-Z0-9]{3,10}$/);
-
+  let regex = new RegExp(
+    "^[a-zA-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯĂẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼỀỀỂẾưăạảấầẩẫậắằẳẵặẹẻẽềềểếỄỆỈỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪễệỉịọỏốồổỗộớờởỡợụủứừỬỮỰỲỴÝỶỸửữựỳỵỷỹsW|_]+$"
+  );
+  const myarr = name.split(" ");
+  const newstring = myarr.join("");
   if (!name) return "Không được để trống!";
-  if (!regex.test(name.trim()))
-    return "Không được chứa ký tự đặt biệt và từ 3 ký tự!";
+  if (!regex.test(newstring.toUpperCase()) && !regex.test(newstring.trim()))
+    return "Không được chứa ký tự đặt biệt hay số và từ 3 ký tự!";
   return "";
 }

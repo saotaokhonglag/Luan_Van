@@ -21,7 +21,7 @@ const AddMoneyDetail = ({ navigation, route }) => {
       <View style={styles.bodyView}>
         <View style={styles.header}>
           <ImageBackground
-            source={require("../image/addWallet-Trans.png")}
+            source={require("../../image/addWallet-Trans.png")}
             style={{ height: 50, width: 50 }}
           />
           <View style={styles.headerItem}>
@@ -34,7 +34,7 @@ const AddMoneyDetail = ({ navigation, route }) => {
         </View>
         <View style={styles.status}>
           <ImageBackground
-            source={require("../image/check-transaction.png")}
+            source={require("../../image/check-transaction.png")}
             style={{ height: 18, width: 18, marginHorizontal: 10 }}
           />
           <Text style={styles.textDer}>Giao dịch thành công</Text>

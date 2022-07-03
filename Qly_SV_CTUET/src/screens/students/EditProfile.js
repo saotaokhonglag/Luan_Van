@@ -10,16 +10,15 @@ import {
   Alert,
   Platform,
 } from "react-native";
-import React, { useContext, useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import SelectDropdown from "react-native-select-dropdown";
 import AppLoader from "../../components/AppLoader";
-import { Avatar, Title, Caption, Text } from "react-native-paper";
+import { Text } from "react-native-paper";
 import { phoneNumberValidator } from "../../helpers/phoneNumberValidator";
-import { nameValidator } from "../../helpers/nameValidator";
-import { userContext } from "../../store/GlobalContext";
+import { useUser } from "../../store/GlobalContext";
 import { theme } from "../../contants/theme";
 import { db } from "../../../firebase_config";
 import moment from "moment";
@@ -31,15 +30,12 @@ import { getDownloadURL, ref, uploadBytes, getStorage } from "firebase/storage";
 const EditProfile = ({ navigation }) => {
   const {
     userInfo,
-    product,
-    setProduct,
     userProfile,
-    setGender,
     genders,
     setUserProfile,
     loginPending,
     setLoginPending,
-  } = useContext(userContext);
+  } = useUser();
   const [name, setName] = useState({ value: userProfile.hovaten, error: "" });
   const [phone, setPhone] = useState({ value: userProfile.sdt, error: "" });
   const [email, setEmail] = useState({ value: userInfo.email, error: "" });
@@ -48,7 +44,6 @@ const EditProfile = ({ navigation }) => {
   const [show, setShow] = useState(false);
   const [errorTextPhone, setErroTextPhone] = useState();
   const phoneError = phoneNumberValidator(phone.value);
-  const [loading, setLoading] = useState(false);
   const [image, setImage] = useState(null);
   const onChange = (e, selectedDate) => {
     setBirthday(moment(selectedDate || date).format("YYYY-MM-DD"));
@@ -61,7 +56,9 @@ const EditProfile = ({ navigation }) => {
         if (Platform.OS != "web") {
           const { status } = await ImagePicker.requestCameraPermissionsAsync();
           if (status !== "granted") {
-            alert("Sorry");
+            alert(
+              "Xin lỗi, bạn chưa cấp quyền truy cập máy ảnh cho ứng dụng này!"
+            );
           }
         }
       };
@@ -106,7 +103,10 @@ const EditProfile = ({ navigation }) => {
           xhr.open("GET", image, true);
           xhr.send(null);
         });
-        const fileRef = ref(getStorage(), "image/sinhvien/avatar");
+        const fileRef = ref(
+          getStorage(),
+          "image/sinhvien/" + userProfile.iduser
+        );
         const result2 = await uploadBytes(fileRef, blob);
 
         getDownloadURL(fileRef).then((url) => {
@@ -117,6 +117,15 @@ const EditProfile = ({ navigation }) => {
             gioitinh: gioitinh,
             ngaysinh: birthday,
             image: url,
+          });
+          setUserProfile({
+            iduser: userProfile.iduser,
+            hovaten: name.value,
+            sdt: phone.value,
+            email: email.value,
+            gioitinh: gioitinh,
+            ngaysinh: birthday,
+            image: image != null ? image : userProfile.image,
           });
           blob.close();
           return url;
@@ -130,9 +139,19 @@ const EditProfile = ({ navigation }) => {
           ngaysinh: birthday,
           image: userProfile.image,
         });
+        setUserProfile({
+          iduser: userProfile.iduser,
+          hovaten: name.value,
+          sdt: phone.value,
+          email: email.value,
+          gioitinh: gioitinh,
+          ngaysinh: birthday,
+          image: image != null ? image : userProfile.image,
+        });
       }
       setLoginPending(false);
       Alert.alert("Thông báo", "Cập nhật thành công");
+      navigation.goBack();
     }
   }
   return (

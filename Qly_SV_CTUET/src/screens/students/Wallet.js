@@ -10,7 +10,7 @@ import {
   Dimensions,
   FlatList,
 } from "react-native";
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { db } from "../../../firebase_config";
 import {
@@ -22,22 +22,16 @@ import {
   doc,
   setDoc,
 } from "firebase/firestore";
-import { userContext } from "../../store/GlobalContext";
+import { useUser } from "../../store/GlobalContext";
 import { LogBox } from "react-native";
 import AddMoneyModal from "../../components/Modals/AddMoneyModal";
-import HistoryItem from "../../components/HistoryItem";
+import HistoryItem from "./Item/HistoryItem";
 import moment from "moment";
 
 LogBox.ignoreLogs(["EventEmitter.removeListener"]);
 const { width, height } = Dimensions.get("window");
 const Wallet = ({ navigation }) => {
-  const {
-    userInfo,
-    setUserInfo,
-    userProfile,
-    walletBalance,
-    setWalletBalance,
-  } = useContext(userContext);
+  const { userInfo, userProfile, walletBalance, setWalletBalance } = useUser();
   const [ModalVisible, setModalVisible] = useState(false);
   const [idGD, setIdGD] = useState();
   const [currentDate, setCurrentDate] = useState();
@@ -162,8 +156,6 @@ const Wallet = ({ navigation }) => {
         renderItem={({ item: history }) => {
           return <HistoryItem {...history} info={history} />;
         }}
-        // ListHeaderComponent={header}
-        // ListFooterComponent={Total}
       />
     </SafeAreaView>
   );

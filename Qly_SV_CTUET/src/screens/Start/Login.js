@@ -10,6 +10,7 @@ import {
   Image,
   TouchableOpacity,
   Platform,
+  Alert,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import FontAsome from "react-native-vector-icons/FontAwesome";
@@ -25,6 +26,7 @@ import {
   onSnapshot,
   where,
   doc,
+  getDocs,
 } from "firebase/firestore";
 import { LogBox } from "react-native";
 import { Text } from "react-native-paper";
@@ -37,6 +39,7 @@ import BackButton from "../../components/BackButton";
 import { theme } from "../../contants/theme";
 import { userNameValidator } from "../../helpers/userNameValidator";
 import { passwordValidator } from "../../helpers/passwordValidator";
+import md5 from "../../helpers/md5";
 import AppLoader from "../../components/AppLoader";
 
 LogBox.ignoreLogs(["EventEmitter.removeListener"]);
@@ -46,12 +49,12 @@ const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
 
 const Login = ({ navigation }) => {
-  const { loginPending, setLoginPending } = useContext(userContext);
+  const { loginPending, setLoginPending, setManangerProfile } =
+    useContext(userContext);
   const [userName, setUserName] = useState({ value: "", error: "" });
   const [password, setPassword] = useState({ value: "", error: "" });
 
-  const onLoginPressed = () => {
-    setLoginPending(true);
+  const onLoginPressed = async () => {
     const userNameError = userNameValidator(userName.value);
     const passwordError = passwordValidator(password.value);
     if (userNameError || passwordError) {
@@ -59,10 +62,41 @@ const Login = ({ navigation }) => {
       setPassword({ ...password, error: passwordError });
       return;
     }
-    navigation.reset({
-      index: 0,
-      routes: [{ name: "Dashboard" }],
+
+    setLoginPending(true);
+    const docRef = query(
+      collection(db, "taikhoan"),
+      where("username", "==", userName.value),
+      where("password", "==", md5(password.value))
+    );
+    const data = await getDocs(docRef);
+    let check = "";
+    data.forEach((doc) => {
+      check = doc.data().username;
     });
+    if (check != "") {
+      if (userName.value == "adminctut123") {
+        navigation.reset({
+          index: 0,
+          routes: [{ name: "AdminPage" }],
+        });
+      } else {
+        const ref = doc(db, "quanly", check);
+        const docSnap = await getDoc(ref);
+        if (docSnap.data() !== undefined) {
+          setManangerProfile(docSnap.data());
+          navigation.reset({
+            index: 0,
+            routes: [{ name: "HomePageSeller" }],
+          });
+        }
+      }
+    } else {
+      Alert.alert(
+        "Tài khoản không tồn tại!",
+        "Username hoặc mật khẩu không đúng. Vui lòng kiểm tra và thử lại."
+      );
+    }
     setLoginPending(false);
   };
 

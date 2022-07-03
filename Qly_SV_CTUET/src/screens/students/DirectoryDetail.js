@@ -4,7 +4,6 @@ import {
   StyleSheet,
   Text,
   View,
-  TouchableOpacity,
   ImageBackground,
   Dimensions,
 } from "react-native";
@@ -22,7 +21,6 @@ import { theme } from "../../contants/theme";
 import { useUser } from "../../store/GlobalContext";
 const DirectoryDetail = ({ navigation, route }) => {
   const item = route.params;
-  const { loginPending, setLoginPending } = useUser();
   const [directoryName, setDirectoryName] = useState();
   const [idHD, setIdHD] = useState();
 
@@ -62,7 +60,7 @@ const DirectoryDetail = ({ navigation, route }) => {
       <View style={styles.bodyView}>
         <View style={styles.header}>
           <ImageBackground
-            source={require("../image/shopping-cart.png")}
+            source={require("../../image/shopping-cart.png")}
             style={{ height: 50, width: 50 }}
           />
           <View style={styles.headerItem}>
@@ -78,7 +76,7 @@ const DirectoryDetail = ({ navigation, route }) => {
         </View>
         <View style={styles.status}>
           <ImageBackground
-            source={require("../image/check-transaction.png")}
+            source={require("../../image/check-transaction.png")}
             style={{ height: 18, width: 18, marginHorizontal: 10 }}
           />
           <Text style={styles.textDer}>Giao dịch thành công</Text>

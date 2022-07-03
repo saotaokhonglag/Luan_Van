@@ -10,15 +10,15 @@ import {
 } from "react-native";
 import { db } from "../../../firebase_config";
 import { doc, deleteDoc } from "firebase/firestore";
-import React, { useContext, useState, useEffect } from "react";
-import Item from "../../components/DetialsOrderItem";
-import { userContext } from "../../store/GlobalContext";
+import React, { useState, useEffect } from "react";
+import Item from "./Item/DetialsOrderItem";
+import { useUser } from "../../store/GlobalContext";
 import { theme } from "../../contants/theme";
 const { width } = Dimensions.get("window");
 const CheckOut = ({ navigation, route }) => {
   const item = route.params;
-  const { userInfo, product, userProfile } = useContext(userContext);
-  const [totalPrice, setTotalPrice] = useState(0);
+  const { product, userProfile } = useUser();
+  const [totalPriceDetail, setTotalPriceDetail] = useState(0);
 
   useEffect(() => {
     let isApiSubscribed = true;
@@ -32,7 +32,7 @@ const CheckOut = ({ navigation, route }) => {
     let tt = 0;
     product.forEach((item) => {
       tt += item.soluong * item.gia;
-      setTotalPrice(tt);
+      setTotalPriceDetail(tt);
     });
   }
   async function goHomePage() {
@@ -77,14 +77,15 @@ const CheckOut = ({ navigation, route }) => {
               renderItem={({ item: product }) => {
                 return <Item {...product} info={product} />;
               }}
-              // ListHeaderComponent={header}
-              // ListFooterComponent={Total}
             />
           </View>
           <View style={styles.orderFooter}>
             <Text style={styles.textTitle}>Tổng cộng</Text>
             <Text style={styles.textTitle}>
-              {totalPrice.toFixed(0).replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.")}đ
+              {totalPriceDetail
+                .toFixed(0)
+                .replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.")}
+              đ
             </Text>
           </View>
         </View>

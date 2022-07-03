@@ -5,12 +5,12 @@ import {
   StatusBar,
   TouchableOpacity,
   Image,
-  TextInput,
   Text,
   Alert,
 } from "react-native";
 import React, { useState, useEffect } from "react";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
+import TextInput from "../../components/TextInput";
 import md5 from "../../helpers/md5";
 import SelectDropdown from "react-native-select-dropdown";
 import { db } from "../../../firebase_config";
@@ -21,18 +21,23 @@ import {
   onSnapshot,
   collection,
   addDoc,
+  getDocs,
+  getDoc,
+  where,
 } from "firebase/firestore";
 import { phoneNumberValidator } from "../../helpers/phoneNumberValidator";
 import { nameValidator } from "../../helpers/nameValidator";
 import moment from "moment";
+import { useUser } from "../../store/GlobalContext";
 
 const AddNVQL = ({ navigation }) => {
+  const { loginPending, setLoginPending } = useUser();
   const [dataDV, setDataDV] = useState([]);
   const [TenTK, setTenTK] = useState({ value: "", error: "" });
-  const [MK, setMK] = useState("");
+  const [MK, setMK] = useState({ value: "", error: "" });
   const [name, setName] = useState({ value: "", error: "" });
   const [SDT, setSDT] = useState({ value: "", error: "" });
-  const [service, setService] = useState();
+  const [service, setService] = useState("");
 
   useEffect(() => {
     createID();
@@ -55,71 +60,124 @@ const AddNVQL = ({ navigation }) => {
   }
 
   const onPressDK = async () => {
-    try {
-      await addDoc(collection(db, "taikhoan"), {
-        username: TenTK.value,
-        password: md5(MK),
+    const phoneError = phoneNumberValidator(SDT.value);
+    const nameErr = nameValidator(name.value);
+    const docRef = query(
+      collection(db, "quanly"),
+      where("sdt", "==", SDT.value)
+    );
+    const docRef2 = query(
+      collection(db, "quanly"),
+      where("id_DV", "==", service)
+    );
+    if (phoneError || nameErr || service == "") {
+      setName({ ...name, error: nameErr });
+      setSDT({ ...SDT, error: phoneError });
+    } else {
+      let dv = "";
+      let dt = "";
+      const docSnap = await getDocs(docRef);
+      docSnap.forEach((d) => {
+        dt = d.data().sdt;
       });
-      await setDoc(doc(db, "quanly", TenTK.value), {
-        id_NV: TenTK.value,
-        id_DV: service,
-        hovaten: name.value,
-        sdt: SDT.value,
-        TrangThai: 1, //? Trạng thái = 1 còn, = 0 đã xóa
+      const docSnap2 = await getDocs(docRef2);
+      docSnap2.forEach((d) => {
+        dv = d.data().id_NV;
       });
-      Alert.alert("Thông Báo", "Thêm nhân viên thành công!");
-      navigation.navigate("DSQL");
-    } catch (error) {
-      Alert.alert(`Lỗi: ${error.message}`, `Lỗi: ${error.message}`);
+      if (dt !== "") {
+        Alert.alert(
+          "Trùng số điện thoại",
+          "Số điện thoại này đã có người sử dụng"
+        );
+      } else {
+        if (dv !== "") {
+          Alert.alert(
+            "Không thành công!",
+            "Dịch vụ này được nhân viên khác sở hữu"
+          );
+        } else {
+          setLoginPending(true);
+          try {
+            await setDoc(doc(db, "taikhoan", TenTK.value), {
+              username: TenTK.value,
+              password: md5(MK.value),
+            });
+            await setDoc(doc(db, "quanly", TenTK.value), {
+              id_NV: TenTK.value,
+              id_DV: service,
+              hovaten: name.value,
+              sdt: SDT.value,
+              TrangThai: 1, //? Trạng thái = 1 còn, = 0 đã xóa
+            });
+            const docRef2 = doc(db, "quanly", TenTK.value);
+            await setDoc(doc(docRef2, "vi", TenTK.value), {
+              sodu: 0,
+            });
+            setLoginPending(false);
+            Alert.alert("Thông Báo", "Thêm nhân viên thành công!");
+            setMK({ value: "", error: "" });
+            setSDT({ value: "", error: "" });
+            setName({ value: "", error: "" });
+          } catch (error) {
+            Alert.alert(`Lỗi: ${error.message}`, `Lỗi: ${error.message}`);
+          }
+        }
+      }
     }
   };
   return (
     <SafeAreaView>
-      <View style={{ marginTop: 25, paddingLeft: "8%" }}>
+      <View style={{ marginTop: 25, paddingHorizontal: 20 }}>
         <View>
-          <Text style={styles.text}>Tên quản lý</Text>
           <TextInput
-            onChangeText={(text) => setName({ value: text, error: "" })}
+            label="Họ và tên"
+            returnKeyType="next"
             value={name.value}
-            style={styles.textinput}
-            autoCapitalize="none"
+            onChangeText={(text) => setName({ value: text, error: "" })}
+            error={!!name.error}
+            errorText={name.error}
           />
         </View>
         <View>
-          <Text style={styles.text}>Tên tài khoản</Text>
           <TextInput
-            onChangeText={(text) => setTenTK({ value: text, error: "" })}
+            label="Username"
+            returnKeyType="next"
             value={TenTK.value}
-            style={styles.textinput}
-            autoCapitalize="none"
+            onChangeText={(text) => setTenTK({ value: text, error: "" })}
+            error={!!TenTK.error}
             editable={false}
-            selectTextOnFocus={false}
+            errorText={TenTK.error}
           />
         </View>
         <View>
-          <Text style={styles.text}>Mật khẩu</Text>
           <TextInput
-            onChangeText={setMK}
-            value={MK}
-            style={styles.textinput}
-            autoCapitalize="none"
+            label="Password"
+            returnKeyType="next"
+            value={MK.value}
+            onChangeText={(text) => setMK({ value: text, error: "" })}
+            error={!!MK.error}
+            errorText={MK.error}
           />
         </View>
         <View>
-          <Text style={styles.text}>Số điện thoại</Text>
           <TextInput
-            onChangeText={(text) => setSDT({ value: text, error: "" })}
+            label="Số điện thoại"
+            returnKeyType="next"
             value={SDT.value}
-            style={styles.textinput}
+            onChangeText={(text) => setSDT({ value: text, error: "" })}
+            error={!!SDT.error}
+            errorText={SDT.error}
             autoCapitalize="none"
+            autoCompleteType="tel"
+            textContentType="telephoneNumber"
             keyboardType="numeric"
+            maxLength={10}
           />
         </View>
         <View>
-          <Text style={styles.text}>Loại dịch vụ</Text>
           <SelectDropdown
             data={dataDV}
-            defaultValue={"Dich Vụ A"}
+            defaultValue={""}
             onSelect={(selectedItem, index) => {
               // setService(selectedItem);
               setService(selectedItem.id_DV);
@@ -147,6 +205,9 @@ const AddNVQL = ({ navigation }) => {
             rowStyle={styles.dropdown1RowStyle}
             rowTextStyle={styles.dropdown1RowTxtStyle}
           />
+          {service == "" ? (
+            <Text style={{ color: "red" }}>Vui lòng chọn loại dịch vụ</Text>
+          ) : null}
         </View>
         <View>
           <TouchableOpacity
@@ -192,8 +253,8 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   dropdown1BtnStyle: {
-    width: "95%",
-    height: 50,
+    width: "100%",
+    height: 60,
     backgroundColor: "#FFF",
     borderRadius: 5,
     borderWidth: 1,

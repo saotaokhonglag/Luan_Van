@@ -13,8 +13,8 @@ import { userNameValidator } from "../../helpers/userNameValidator";
 const AddServiceModal = (props) => {
   const [serviceName, setServiceName] = useState({ value: "", error: "" });
 
-  const logOut = (bool) => {
-    props.LogOut(bool);
+  const logOut = (bool, serviceName) => {
+    props.LogOut(bool, serviceName);
   };
   const cancelModal = (bool) => {
     props.cancelModal(bool);
@@ -25,7 +25,7 @@ const AddServiceModal = (props) => {
         <View style={styles.textView}>
           <Text style={styles.text}>Thêm Dịch vụ</Text>
           <TouchableOpacity
-            onPress={() => logOut(false)}
+            onPress={() => cancelModal(false)}
             style={{
               height: 30,
               width: 30,
@@ -43,9 +43,7 @@ const AddServiceModal = (props) => {
             label="Tên dịch vụ"
             returnKeyType="next"
             value={serviceName.value}
-            onChangeText={(text) =>
-              setCategorisName({ value: text, error: "" })
-            }
+            onChangeText={(text) => setServiceName({ value: text, error: "" })}
             error={!!serviceName.error}
             errorText={serviceName.error}
             autoCapitalize="none"
@@ -53,7 +51,7 @@ const AddServiceModal = (props) => {
         </View>
         <View style={styles.buttonView}>
           <TouchableOpacity
-            onPress={() => logOut(false)}
+            onPress={() => logOut(false, serviceName)}
             style={styles.buttonModal}
           >
             <Text

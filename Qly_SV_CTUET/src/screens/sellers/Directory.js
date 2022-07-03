@@ -1,4 +1,12 @@
-import { collection, onSnapshot, query, where } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  onSnapshot,
+  query,
+  setDoc,
+  where,
+  getDocs,
+} from "firebase/firestore";
 import React, { useState, useEffect } from "react";
 import {
   Alert,
@@ -15,19 +23,48 @@ import {
 import AntDesign from "react-native-vector-icons/AntDesign";
 import { db } from "../../../firebase_config";
 import AddCategoriesModal from "../../components/Modals/AddCategoriesModal";
-import DirectoryItem from "../../components/DirectoryItem";
+import DirectoryItem from "./Item/DirectoryItem";
+import moment from "moment";
+import { useUser } from "../../store/GlobalContext";
 
 const Directory = ({ navigation }) => {
+  const { ManangerProfile } = useUser();
   const [ModalVisible, setModalVisible] = useState(false);
   const [data, setData] = useState();
+  const [idDM, setIDDM] = useState();
 
   useEffect(() => {
     getData();
-
+    getIDDM();
     return () => {};
-  }, []);
-
-  const LogOut = (bool) => {
+  }, [ModalVisible]);
+  async function getIDDM() {
+    setIDDM("DM" + moment().format("DDMMYYYHHmmss"));
+  }
+  const AddCategories = async (bool, categoryName) => {
+    const ref = query(
+      collection(db, "danhmuc"),
+      where("id_DV", "==", ManangerProfile.id_DV),
+      where("TenDanhMuc", "==", categoryName.value.trim())
+    );
+    const data = await getDocs(ref);
+    let nameDirec = "";
+    data.forEach((d) => {
+      nameDirec = d.data().TenDanhMuc;
+    });
+    if (nameDirec == "") {
+      addDoc(collection(db, "danhmuc"), {
+        TenDanhMuc: categoryName.value,
+        id_DV: ManangerProfile.id_DV,
+        idDanhMuc: idDM,
+      });
+    } else {
+      Alert.alert(
+        "Danh mục tồn tại",
+        "Tên danh mục này đã có rồi, vui lòng chọn tên khác."
+      );
+    }
+    console.log(categoryName.value);
     setModalVisible(bool);
   };
   const CancelModal = (bool) => {
@@ -37,7 +74,7 @@ const Directory = ({ navigation }) => {
   async function getData() {
     const ref = query(
       collection(db, "danhmuc"),
-      where("id_DV", "==", "DV1906202298")
+      where("id_DV", "==", ManangerProfile.id_DV)
     );
     const un = await onSnapshot(ref, (querySnapshot) => {
       const data = [];
@@ -55,7 +92,10 @@ const Directory = ({ navigation }) => {
         transparent={true}
         onRequestClose={() => ModalVisible(false)}
       >
-        <AddCategoriesModal LogOut={LogOut} cancelModal={CancelModal} />
+        <AddCategoriesModal
+          AddCategories={AddCategories}
+          cancelModal={CancelModal}
+        />
       </Modal>
       <FlatList
         keyExtractor={(item) => item.idDanhMuc}

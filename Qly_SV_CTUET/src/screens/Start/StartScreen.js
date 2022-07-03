@@ -1,5 +1,5 @@
-import React, { useContext, useEffect, useState } from "react";
-import { userContext } from "../../store/GlobalContext";
+import React, { useEffect, useState } from "react";
+import { useUser } from "../../store/GlobalContext";
 import * as AuthSession from "expo-auth-session/providers/google";
 import * as Webrowser from "expo-web-browser";
 import Background from "../../components/Background";
@@ -11,15 +11,7 @@ import Paragraph from "../../components/Paragraph";
 import GoogleButton from "../../components/GoogleButton";
 import { Alert, LogBox } from "react-native";
 import { db } from "../../../firebase_config";
-import {
-  collection,
-  addDoc,
-  query,
-  getDoc,
-  onSnapshot,
-  where,
-  doc,
-} from "firebase/firestore";
+import { collection, query, getDoc, onSnapshot, doc } from "firebase/firestore";
 import AppLoader from "../../components/AppLoader";
 
 Webrowser.maybeCompleteAuthSession();
@@ -27,15 +19,12 @@ LogBox.ignoreLogs(["EventEmitter.removeListener"]);
 
 export default function StartScreen({ navigation }) {
   const {
-    userInfo,
     setUserInfo,
-    userProfile,
     setUserProfile,
     loginPending,
     setLoginPending,
     setWalletBalance,
-    walletBalance,
-  } = useContext(userContext);
+  } = useUser();
   const [rep, setRep] = useState(false);
 
   const [request, response, promptAsync] = AuthSession.useAuthRequest({
@@ -114,10 +103,7 @@ export default function StartScreen({ navigation }) {
         <Logo />
         <Header>Student Service Management</Header>
         <Paragraph>Ứng dụng dành cho sinh viên</Paragraph>
-        <Button
-          mode="contained"
-          onPress={() => navigation.navigate("HomePageSeller")}
-        >
+        <Button mode="contained" onPress={() => navigation.navigate("Login")}>
           Đăng nhập với tài khoản khác
         </Button>
         <GoogleButton onPress={() => LoginWithGoogle()} />

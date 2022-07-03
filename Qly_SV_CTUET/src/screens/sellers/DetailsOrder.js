@@ -5,12 +5,11 @@ import {
   Text,
   StyleSheet,
   SafeAreaView,
-  TouchableOpacity,
   FlatList,
   Dimensions,
 } from "react-native";
 import { db } from "../../../firebase_config";
-import ManagementOrdersDetailItem from "../../components/ManagementOrdersDetailItem";
+import ManagementOrdersDetailItem from "./Item/ManagementOrdersDetailItem";
 
 const DetailsOrder = ({ navigation, route }) => {
   const item1 = route.params;

@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import Feather from "react-native-vector-icons/Feather";
 import { useUser } from "../../store/GlobalContext";
-import ProductItemsManan from "../../components/ProductItemsManan";
+import ProductItemsMananger from "./Item/ProductItemsMananger";
 import { db } from "../../../firebase_config";
 import {
   collection,
@@ -35,17 +35,12 @@ const wait = (timeout) => {
 };
 const { height, width } = Dimensions.get("window");
 const Product = ({ navigation }) => {
-  const { ModalVisible, setModalVisible } = useUser();
+  const { ModalVisible, setModalVisible, id_sp, setId_sp, ManangerProfile } =
+    useUser();
   const [refreshing, setRefreshing] = useState(false);
   const [data, setData] = useState([]);
-  const onRefresh = React.useCallback(() => {
-    GetDATA();
-    setRefreshing(true);
-    wait(1000).then(() => setRefreshing(false));
-  }, []);
   useEffect(() => {
     GetDATA();
-    onRefresh();
   }, []);
   const ListEmptyComponent = () => {
     return (
@@ -62,15 +57,14 @@ const Product = ({ navigation }) => {
   };
   async function onPressOk() {
     try {
-      await updateDoc(doc(db, "SanPham", MaSP), {
+      await updateDoc(doc(db, "sanpham", id_sp), {
         TrangThai: 0,
       });
+      setModalVisible(false);
       Alert.alert("Thông Báo", "Xóa sản phẩm thành công!");
     } catch (error) {
       Alert.alert(`Lỗi: ${error.message}`, `Lỗi: ${error.message}`);
     }
-    setModalVisible(false);
-    onRefresh();
   }
   async function onPressCancel() {
     setModalVisible(false);
@@ -86,7 +80,7 @@ const Product = ({ navigation }) => {
     const citiesRef = collection(db, "sanpham");
     const q = query(
       citiesRef,
-      where("id_DV", "==", "DV1906202298"),
+      where("id_DV", "==", ManangerProfile.id_DV),
       where("TrangThai", "==", 1)
     );
     const unsubscribe = await onSnapshot(q, (querySnapshot) => {
@@ -143,7 +137,7 @@ const Product = ({ navigation }) => {
           keyExtractor={(item) => item.idsp}
           data={data}
           renderItem={({ item: product }) => {
-            return <ProductItemsManan {...product} info={product} />;
+            return <ProductItemsMananger {...product} info={product} />;
           }}
         />
       </View>

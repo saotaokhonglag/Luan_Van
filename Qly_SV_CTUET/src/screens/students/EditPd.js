@@ -14,18 +14,15 @@ import React, { useState, useContext } from "react";
 import AntDesign from "react-native-vector-icons/AntDesign";
 import { db } from "../../../firebase_config";
 import { deleteDoc, doc, updateDoc } from "firebase/firestore";
-import { userContext } from "../../store/GlobalContext";
+import { useUser } from "../../store/GlobalContext";
 import { theme } from "../../contants/theme";
 import AppLoader from "../../components/AppLoader";
 
 const { width, height } = Dimensions.get("window");
 const EditPd = ({ route, navigation }) => {
   const item = route.params;
-  const { userInfo, loginPending, setLoginPending, userProfile } =
-    useContext(userContext);
+  const { loginPending, setLoginPending, userProfile } = useUser();
   const [curPrice, setCurPrice] = useState(item.totals);
-  const [change, setChange] = useState(item.quantity);
-  const [product, setProduct] = useState([]);
 
   function AddQty(item) {
     item.quantity++;
@@ -69,7 +66,7 @@ const EditPd = ({ route, navigation }) => {
               />
             ) : (
               <ImageBackground
-                source={require("../image/imagenull.jpg")}
+                source={require("../../image/imagenull.jpg")}
                 style={{ height: 65, width: 65 }}
               />
             )}

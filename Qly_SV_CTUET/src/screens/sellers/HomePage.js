@@ -5,18 +5,71 @@ import {
   StatusBar,
   TouchableOpacity,
   Image,
+  ImageBackground,
+  Modal,
+  Pressable,
 } from "react-native";
 import React, { useState, useEffect } from "react";
 import AntDesign from "react-native-vector-icons/AntDesign";
-import QRCode from "react-native-qrcode-svg";
+import { useUser } from "../../store/GlobalContext";
 import { Avatar, Title, Caption, Text } from "react-native-paper";
+import { db } from "../../../firebase_config";
+import { query, collection, onSnapshot, doc } from "firebase/firestore";
 
 const HomePageSller = ({ navigation }) => {
-  const [qrcode, setQrcode] = useState("SP001010101");
+  const { setManangerProfile, ManangerProfile } = useUser();
+  const [ModalVisible, setModalVisible] = useState(false);
+  const [walletBalance, setWalletBalance] = useState(0);
 
-  async function createQR() {}
+  useEffect(() => {
+    getWallet();
+
+    return () => {};
+  }, []);
+
+  async function LogOut() {
+    setManangerProfile();
+    navigation.replace("StartScreen");
+  }
+  async function getWallet() {
+    const q = doc(db, "quanly", ManangerProfile.id_NV);
+    const ref = query(collection(q, "vi"));
+    const unsubscribe = await onSnapshot(ref, (querySnapshot) => {
+      const stock = [];
+      querySnapshot.forEach((d) => {
+        stock.push(d.data());
+      });
+      stock.forEach((item) => {
+        setWalletBalance(item.sodu);
+      });
+    });
+  }
   return (
     <SafeAreaView style={styles.container}>
+      <Modal
+        visible={ModalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => ModalVisible(false)}
+      >
+        <View style={styles.modalView}>
+          <Text style={styles.modalText}>Bạn có muốn đăng xuất? </Text>
+          <View style={{ flexDirection: "row" }}>
+            <Pressable
+              onPress={LogOut}
+              style={[styles.button, styles.buttonOk]}
+            >
+              <Text style={styles.textStyle}>Xác Nhận</Text>
+            </Pressable>
+            <Pressable
+              onPress={() => setModalVisible(false)}
+              style={[styles.button, styles.buttonCancel]}
+            >
+              <Text style={styles.textCancel}>Hủy</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
       <StatusBar barStyle="light-content" backgroundColor="#2F85F8" />
       <View style={styles.circleShape}>
         <View style={styles.header}>
@@ -27,8 +80,24 @@ const HomePageSller = ({ navigation }) => {
             size={80}
           />
           <View style={{ marginLeft: 20, color: "#FCF4F4FF" }}>
-            <Title style={styles.title}>Thai Ngoc</Title>
-            <Caption style={styles.caption}>0855633053</Caption>
+            <Title style={styles.title}>{ManangerProfile.hovaten}</Title>
+            <Caption style={styles.caption}>{ManangerProfile.sdt}</Caption>
+          </View>
+          <View
+            style={{
+              width: 150,
+              alignItems: "flex-end",
+            }}
+          >
+            <TouchableOpacity
+              onPress={() => setModalVisible(true)}
+              style={{ paddingLeft: 30 }}
+            >
+              <ImageBackground
+                style={{ width: 20, height: 20, marginVertical: 5 }}
+                source={require("../../../assets/turn-off.png")}
+              />
+            </TouchableOpacity>
           </View>
         </View>
       </View>
@@ -42,8 +111,11 @@ const HomePageSller = ({ navigation }) => {
             },
           ]}
         >
-          <Title style={styles.titleA}>Doanh Thu Hôm Nay</Title>
-          <Caption style={styles.textA}>0đ</Caption>
+          <Title style={styles.titleA}>Ví</Title>
+          <Caption style={styles.textA}>
+            {walletBalance.toFixed(0).replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.")}
+            đ
+          </Caption>
         </View>
         <View
           style={[
@@ -55,7 +127,7 @@ const HomePageSller = ({ navigation }) => {
           ]}
         >
           <Title style={styles.titleA}>Đơn hàng</Title>
-          <Caption style={styles.textA}>0</Caption>
+          <Caption style={styles.textA}>12</Caption>
         </View>
       </View>
       <View style={styles.eye}>
@@ -66,7 +138,7 @@ const HomePageSller = ({ navigation }) => {
           }}
         >
           <Image
-            source={require("../image/product.png")}
+            source={require("../../image/product.png")}
             style={{ width: "50%", height: "50%" }}
           />
           <Text>Sản phẩm</Text>
@@ -79,7 +151,7 @@ const HomePageSller = ({ navigation }) => {
             style={styles.cusButton}
           >
             <Image
-              source={require("../image/clipboard.png")}
+              source={require("../../image/clipboard.png")}
               style={{ width: "50%", height: "50%" }}
             />
             <Text>Đơn hàng</Text>
@@ -93,7 +165,7 @@ const HomePageSller = ({ navigation }) => {
             }}
           >
             <Image
-              source={require("../image/increasing-stocks-graphic.png")}
+              source={require("../../image/increasing-stocks-graphic.png")}
               style={{ width: "50%", height: "50%" }}
             />
             <Text>Báo cáo</Text>
@@ -214,6 +286,52 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 5,
     backgroundColor: "#2F85F8",
+  },
+  modalView: {
+    marginTop: 300,
+    margin: 20,
+    backgroundColor: "white",
+    borderRadius: 20,
+    padding: 35,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  buttonOpen: {
+    backgroundColor: "#F194FF",
+  },
+  buttonOk: {
+    backgroundColor: "#2196F3",
+  },
+  textStyle: {
+    color: "white",
+    fontWeight: "bold",
+  },
+  button: {
+    borderRadius: 20,
+    padding: 10,
+    elevation: 2,
+    border: 3,
+    width: 120,
+    marginHorizontal: 10,
+    alignItems: "center",
+  },
+  textCancel: {
+    color: "black",
+    fontWeight: "bold",
+  },
+  buttonCancel: {
+    backgroundColor: "white",
+  },
+  modalText: {
+    marginBottom: 15,
+    textAlign: "center",
   },
 });
 

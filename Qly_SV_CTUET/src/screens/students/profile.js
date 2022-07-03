@@ -5,19 +5,22 @@ import {
   StatusBar,
   TouchableOpacity,
 } from "react-native";
-import React, { useContext, useEffect } from "react";
+import React, { useEffect } from "react";
 import AntDesign from "react-native-vector-icons/AntDesign";
-import { userContext } from "../../store/GlobalContext";
+import { useUser } from "../../store/GlobalContext";
 import { db } from "../../../firebase_config";
 import { doc, getDoc } from "firebase/firestore";
 import { Avatar, Title, Caption, Text } from "react-native-paper";
 
 const Profile = ({ navigation }) => {
-  const { userInfo, walletBalance, userProfile, setUserProfile } =
-    useContext(userContext);
+  const { walletBalance, userProfile, setUserProfile } = useUser();
   useEffect(() => {
+    let op = true;
     getProfile();
-  }, [userProfile]);
+    return () => {
+      op = false;
+    };
+  }, []);
 
   async function getProfile() {
     const docRef = doc(db, "sinhvien", userProfile.iduser);

@@ -16,6 +16,7 @@ import Background from "../../components/Background";
 import Button from "../../components/Button";
 import { userContext } from "../../store/GlobalContext";
 import { phoneNumberValidator } from "../../helpers/phoneNumberValidator";
+import { nameValidator } from "../../helpers/nameValidator";
 import { db } from "../../../firebase_config";
 import { collection, getDoc, doc, setDoc } from "firebase/firestore";
 import DateTimePicker from "@react-native-community/datetimepicker";
@@ -52,8 +53,9 @@ const CreateProfile = ({ navigation }) => {
 
   async function Signup() {
     const phoneError = phoneNumberValidator(phone.value);
+    const nameErr = nameValidator(name.value);
     if (phoneError) {
-      setName({ ...name, error: "" });
+      setName({ ...name, error: nameErr });
       setPhone({ ...phone, error: phoneError });
       return;
     } else {

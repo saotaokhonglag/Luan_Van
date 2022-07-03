@@ -11,14 +11,12 @@ import {
 } from "react-native";
 import React, { useState, useEffect } from "react";
 import { BarCodeScanner } from "expo-barcode-scanner";
-import Item from "../../components/orderItems";
+import Item from "./Item/orderItems";
 import Feather from "react-native-vector-icons/Feather";
 import { db } from "../../../firebase_config";
 import {
   collection,
-  addDoc,
   query,
-  getDoc,
   onSnapshot,
   where,
   doc,
@@ -234,7 +232,7 @@ const styles = StyleSheet.create({
   text: {
     color: "#fff",
     fontSize: 18,
-    width: "25%",
+    width: "30%",
   },
   info: {
     flexDirection: "row",

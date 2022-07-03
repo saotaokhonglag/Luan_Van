@@ -6,14 +6,85 @@ import {
   TouchableOpacity,
   Image,
   Dimensions,
+  Modal,
+  Pressable,
+  ImageBackground,
 } from "react-native";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import AntDesign from "react-native-vector-icons/AntDesign";
 import { Avatar, Title, Caption, Text } from "react-native-paper";
+import { collection, onSnapshot, query, where } from "firebase/firestore";
+import { db } from "../../../firebase_config";
+import { useUser } from "../../store/GlobalContext";
 const { width } = Dimensions.get("window");
 const AdminPage = ({ navigation }) => {
+  const { setManangerProfile, setLoginPending } = useUser();
+  const [totalMananger, setTotalMananger] = useState();
+  const [totalStudent, setTotalStudent] = useState();
+  const [ModalVisible, setModalVisible] = useState(false);
+
+  useEffect(() => {
+    getMananger();
+    getStudents();
+    return () => {};
+  }, []);
+
+  async function getMananger() {
+    const ref = query(collection(db, "quanly"), where("TrangThai", "==", 1));
+    const un = await onSnapshot(ref, (querySnap) => {
+      let totalManan = 0;
+      querySnap.forEach((d) => {
+        totalManan += 1;
+      });
+      setTotalMananger(totalManan);
+    });
+  }
+  async function getStudents() {
+    const ref = query(collection(db, "sinhvien"));
+    const un = await onSnapshot(ref, (querySnap) => {
+      let totalStu = 0;
+      querySnap.forEach((d) => {
+        totalStu += 1;
+      });
+      setTotalStudent(totalStu);
+    });
+  }
+
+  async function LogOut() {
+    navigation.reset({
+      index: 0,
+      routes: [{ name: "StartScreen" }],
+    });
+    setModalVisible(false);
+    setLoginPending(false);
+    setManangerProfile();
+  }
   return (
     <SafeAreaView style={styles.container}>
+      <Modal
+        visible={ModalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => ModalVisible(false)}
+      >
+        <View style={styles.modalView}>
+          <Text style={styles.modalText}>Bạn có muốn đăng xuất? </Text>
+          <View style={{ flexDirection: "row" }}>
+            <Pressable
+              onPress={LogOut}
+              style={[styles.button, styles.buttonOk]}
+            >
+              <Text style={styles.textStyle}>Xác Nhận</Text>
+            </Pressable>
+            <Pressable
+              onPress={() => setModalVisible(false)}
+              style={[styles.button, styles.buttonCancel]}
+            >
+              <Text style={styles.textCancel}>Hủy</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
       <StatusBar barStyle="light-content" backgroundColor="#2F85F8" />
       <View style={styles.circleShape}>
         <View style={styles.header}>
@@ -27,6 +98,15 @@ const AdminPage = ({ navigation }) => {
             <Title style={styles.title}>Thai Ngoc</Title>
             <Caption style={styles.caption}>0855633053</Caption>
           </View>
+          <TouchableOpacity
+            onPress={() => setModalVisible(true)}
+            style={{ paddingLeft: 30, marginLeft: 90 }}
+          >
+            <ImageBackground
+              style={{ width: 20, height: 20, marginVertical: 5 }}
+              source={require("../../../assets/turn-off.png")}
+            />
+          </TouchableOpacity>
         </View>
       </View>
       <View style={styles.profile}>
@@ -40,7 +120,7 @@ const AdminPage = ({ navigation }) => {
           ]}
         >
           <Title style={styles.titleA}>Nhân viên quản lý</Title>
-          <Caption style={styles.textA}>0</Caption>
+          <Caption style={styles.textA}>{totalMananger}</Caption>
         </View>
         <View
           style={[
@@ -52,7 +132,7 @@ const AdminPage = ({ navigation }) => {
           ]}
         >
           <Title style={styles.titleA}>Sinh viên</Title>
-          <Caption style={styles.textA}>0</Caption>
+          <Caption style={styles.textA}>{totalStudent}</Caption>
         </View>
       </View>
       <View style={styles.eye}>
@@ -63,7 +143,7 @@ const AdminPage = ({ navigation }) => {
           }}
         >
           <Image
-            source={require("../image/adminicon.png")}
+            source={require("../../image/adminicon.png")}
             style={{ width: "50%", height: "50%" }}
           />
           <Text>Nhân viên</Text>
@@ -76,7 +156,7 @@ const AdminPage = ({ navigation }) => {
           style={{ ...styles.cusButton, marginHorizontal: 50 }}
         >
           <Image
-            source={require("../image/sinhvienicon.png")}
+            source={require("../../image/sinhvienicon.png")}
             style={{ width: "50%", height: "50%" }}
           />
           <Text>Sinh viên</Text>
@@ -88,7 +168,7 @@ const AdminPage = ({ navigation }) => {
           style={styles.cusButton}
         >
           <Image
-            source={require("../image/technical-support.png")}
+            source={require("../../image/technical-support.png")}
             style={{ width: "50%", height: "50%" }}
           />
           <Text>Dịch vụ</Text>
@@ -96,7 +176,7 @@ const AdminPage = ({ navigation }) => {
       </View>
       <TouchableOpacity
         onPress={() => {
-          navigation.navigate("AddNVQL");
+          navigation.navigate("NVQL");
         }}
         style={styles.addButton}
       >
@@ -139,7 +219,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: "#2F85F8",
     fontWeight: "bold",
-    fontSize: 15,
+    fontSize: 18,
   },
   cusButton: {
     width: 80,
@@ -211,6 +291,52 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 5,
     backgroundColor: "#2F85F8",
+  },
+  modalView: {
+    marginTop: 300,
+    margin: 20,
+    backgroundColor: "white",
+    borderRadius: 20,
+    padding: 35,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  buttonOpen: {
+    backgroundColor: "#F194FF",
+  },
+  buttonOk: {
+    backgroundColor: "#2196F3",
+  },
+  textStyle: {
+    color: "white",
+    fontWeight: "bold",
+  },
+  button: {
+    borderRadius: 20,
+    padding: 10,
+    elevation: 2,
+    border: 3,
+    width: 120,
+    marginHorizontal: 10,
+    alignItems: "center",
+  },
+  textCancel: {
+    color: "black",
+    fontWeight: "bold",
+  },
+  buttonCancel: {
+    backgroundColor: "white",
+  },
+  modalText: {
+    marginBottom: 15,
+    textAlign: "center",
   },
 });
 

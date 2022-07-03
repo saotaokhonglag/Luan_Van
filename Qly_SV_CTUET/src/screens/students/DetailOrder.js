@@ -14,18 +14,17 @@ import {
   collection,
   addDoc,
   query,
-  getDoc,
   onSnapshot,
   where,
   doc,
   setDoc,
   updateDoc,
-  deleteDoc,
+  getDocs,
 } from "firebase/firestore";
 import React, { useContext, useEffect, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { theme } from "../../contants/theme";
-import Item from "../../components/confirmItems";
+import Item from "./Item/confirmItems";
 import { userContext } from "../../store/GlobalContext";
 import moment from "moment";
 
@@ -41,6 +40,8 @@ const DetailOrder = ({ navigation, info }) => {
   const [totalProducts, setTotalProducts] = useState(0);
   const [totalPrice, setTotalPrice] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const [money, setMoney] = useState(0);
+  const [MaNV, setMaNV] = useState();
 
   useEffect(() => {
     let isApiSubscribed = true;
@@ -48,10 +49,11 @@ const DetailOrder = ({ navigation, info }) => {
     getIdGD();
     getProductsTemp();
     Total();
+
     return () => {
       isApiSubscribed = false;
     };
-  }, [isLoading]);
+  }, []);
 
   async function getIdHD() {
     setIdHD("HD" + moment().format("DDMMYYYYHHmmss"));
@@ -71,8 +73,9 @@ const DetailOrder = ({ navigation, info }) => {
         cities.find((o, i) => {
           if (o.id_DV === cities[i].id_DV) {
             setIdDV(cities[i].id_DV);
-            return true;
+            getWallet(cities[i].id_DV);
           }
+          return null;
         });
       });
       setProduct(cities);
@@ -88,9 +91,37 @@ const DetailOrder = ({ navigation, info }) => {
       setTotalProducts(ttp);
     });
   }
+  async function getWallet(iddv) {
+    const refNV = query(
+      collection(db, "quanly"),
+      where("id_DV", "==", iddv),
+      where("TrangThai", "==", 1)
+    );
+    const NVdata = await getDocs(refNV);
+    let manv = "";
+    NVdata.forEach(async (d) => {
+      if (d.data().id_DV == iddv) {
+        manv = d.data().id_NV;
+        setMaNV(d.data().id_NV);
+      }
+    });
+    const q = doc(db, "quanly", manv);
+    const ref = query(collection(q, "vi"));
+    const unsubscribe = await onSnapshot(ref, (querySnapshot) => {
+      const stock = [];
+      querySnapshot.forEach((d) => {
+        stock.push(d.data());
+        return null;
+      });
+      stock.forEach((item) => {
+        setMoney(item.sodu);
+        return null;
+      });
+      return null;
+    });
+  }
 
   async function CheckOut() {
-    setIsLoading(true);
     if (Array.isArray(product) && product.length === 0) {
       alert("Hóa đơn của bạn hiện tại đang trống");
     } else {
@@ -99,7 +130,6 @@ const DetailOrder = ({ navigation, info }) => {
           "Số dư không đủ",
           "Vui lòng nạp thêm tiền vào ví để thực hiện dịch vụ"
         );
-        setIsLoading(false);
       } else {
         const ref = doc(db, "sinhvien", userProfile.iduser);
         addDoc(collection(db, "HoaDon"), {
@@ -126,17 +156,20 @@ const DetailOrder = ({ navigation, info }) => {
             tensp: item.tensp,
             gia: item.gia,
             soluong: item.soluong,
-            image: "",
+            image: item.image,
           });
         });
         updateDoc(doc(ref, "vi", userProfile.iduser), {
           sodu: walletBalance - totalPrice,
         });
+        const ref2 = doc(db, "quanly", MaNV);
+        updateDoc(doc(ref2, "vi", MaNV), {
+          sodu: money + totalPrice,
+        });
         Alert.alert("Thanh toán thành công", "Bạn đã hoàn tất thanh toán");
         navigation.replace("CheckOut", { idHD, currentDate });
       }
     }
-    setIsLoading(false);
   }
 
   function footer() {

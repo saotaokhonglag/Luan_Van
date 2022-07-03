@@ -21,7 +21,7 @@ import {
   where,
 } from "firebase/firestore";
 import { db } from "../../../firebase_config";
-import DirectoryProducts from "../../components/DirectoryProducts";
+import DirectoryProducts from "./Item/DirectoryProducts";
 import { useUser } from "../../store/GlobalContext";
 
 const { width, height } = Dimensions.get("window");
@@ -33,9 +33,11 @@ const CatalogDetails = ({ navigation, route }) => {
   const [Total, setTotal] = useState();
 
   useEffect(() => {
+    let isApiSubscribed = true;
     getData();
-
-    return () => {};
+    return () => {
+      isApiSubscribed = false;
+    };
   }, []);
 
   async function onPressDelete() {
@@ -52,7 +54,8 @@ const CatalogDetails = ({ navigation, route }) => {
   async function getData() {
     const ref = query(
       collection(db, "sanpham"),
-      where("idDanhMuc", "==", item.idDanhMuc)
+      where("idDanhMuc", "==", item.idDanhMuc),
+      where("TrangThai", "==", 1)
     );
     const un = onSnapshot(ref, (querySnap) => {
       const data = [];
@@ -77,7 +80,7 @@ const CatalogDetails = ({ navigation, route }) => {
         }}
       >
         <ImageBackground
-          source={require("../image/unboxing.png")}
+          source={require("../../image/unboxing.png")}
           style={{ height: 80, width: 80 }}
         />
         <Text
@@ -138,33 +141,6 @@ const CatalogDetails = ({ navigation, route }) => {
         ) : (
           nullData()
         )}
-      </View>
-      <View style={styles.addButton}>
-        <TouchableOpacity
-          onPress={() => {
-            navigation.navigate("AddProduct");
-          }}
-          style={{
-            backgroundColor: "#2F85F8",
-            width: width - 20,
-            height: 50,
-            borderRadius: 10,
-            borderWidth: 0.4,
-            alignItems: "center",
-            padding: 5,
-          }}
-        >
-          <Text
-            style={{
-              color: "#FCF4F4FF",
-              fontSize: 18,
-              marginLeft: 10,
-              marginTop: 5,
-            }}
-          >
-            Thêm sản phẩm
-          </Text>
-        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
